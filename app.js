@@ -1,13 +1,13 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const morgan = require("morgan")
+import express from "express";
+import { config } from "dotenv";
+import morgan from "morgan";
+import {connectDB} from './config/db.js';
 
 const app = express();
 app.use(morgan('tiny'));
 
-const connectDB = require('./config/db');
 
-dotenv.config({path:'./config/.env'})
+config({path:'./config/.env'})
 
 connectDB();
 app.get('/', (req, res)=>{
@@ -19,4 +19,4 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
  
-module.exports = app;
+export default app;
