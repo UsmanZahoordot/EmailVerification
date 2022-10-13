@@ -4,10 +4,16 @@ import morgan from "morgan";
 import {connectDB} from './config/db.js';
 import {router} from './server/routes/api_routes.js'
 import bodyParser from 'body-parser';
+import { getDays } from "./utils/helper.js";
+import cron from "node-cron";
 
 const app = express();
 app.use(morgan('tiny'));
 
+cron.schedule('1 0 12 * *', function() {
+  getDays();
+  console.log('running a task every minute');
+});
 
 config({path:'./config/.env'})
 

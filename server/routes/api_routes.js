@@ -10,5 +10,5 @@ router.get("/", (req, res) => {
     disposable_status: false,
     verified_on: new Date(),
   });
-  res.send(verification);
+  res.json(verification);
 });
