@@ -12,7 +12,7 @@ router.get("/", (req, res) => {
 //     disposable_status: false,
 //     verified_on: new Date(),
 //   });
-    controller.klean_api_request(req.body.email);
+    controller.clearout_email_verification(req.body.email);
     // res.send(verification);
     res.send(req.body.email);
 });
