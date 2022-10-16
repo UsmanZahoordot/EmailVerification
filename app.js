@@ -10,7 +10,7 @@ import cron from "node-cron";
 const app = express();
 app.use(morgan('tiny'));
 
-cron.schedule('0 0 12 * *', function() {
+cron.schedule('* * * * *', function() {
   flushData();
   console.log('running a task every minute');
 });
@@ -20,7 +20,8 @@ config({path:'./config/.env'})
 connectDB();
 
 app.use(bodyParser.json());
-app.use('/api', router);
+app.use('/api/create', router);
+app.use('/api',router)
 
 const PORT = process.env.PORT || 3001
 
