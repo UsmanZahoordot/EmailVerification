@@ -10,7 +10,7 @@ import cron from "node-cron";
 const app = express();
 app.use(morgan('tiny'));
 
-cron.schedule('* * * * *', function() {
+cron.schedule('0 0 * * *', function() {
   flushData();
   console.log('running a task every minute');
 });
