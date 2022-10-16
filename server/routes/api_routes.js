@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { Verification } from "../models/verification.js";
 import { Verification_Controller } from "../controllers/verification_contoller.js";
 
 export const router = Router();
