@@ -6,13 +6,7 @@ export const router = Router();
 const controller = new Verification_Controller();
 
 router.get("/", (req, res) => {
-//   const verification = new Verification({
-//     email: req.body.email,
-//     is_valid: false,
-//     disposable_status: false,
-//     verified_on: new Date(),
-//   });
-    controller.clearout_email_verification(req.body.email);
-    // res.send(verification);
+
+    controller.klean_api_request(req.body.email);
     res.send(req.body.email);
 });
