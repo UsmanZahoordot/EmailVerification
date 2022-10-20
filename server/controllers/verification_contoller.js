@@ -41,6 +41,7 @@ export class VerificationController {
           else console.log("Error during record insertion : " + err);
         });
         response.send(verification);
+        return;
       }
     );
   };
@@ -81,6 +82,7 @@ export class VerificationController {
             else console.log("Error during record insertion : " + err);
           });
           response.send(verification);
+          return;
         }
       }
     );
