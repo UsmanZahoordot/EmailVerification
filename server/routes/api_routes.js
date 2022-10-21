@@ -30,6 +30,7 @@ router.get("/", async (req, res) => {
   if (cached_queries.length > 0) {
     console.log("Found");
     res.send(cached_queries[0]);
+    return;
   }
 
   while (

@@ -16,8 +16,8 @@ export class VerificationController {
       {
         url: "https://api.kleanmail.com/record_verification/api_record",
         body: reqBody,
-        headers: {
-          api_key: "api_key::_p3Uph0tJv2vImXR%2BaNJ5GSiVqz2Ne0zCookA3tqZMK0%3D", // Your API KEY
+        headers: {  
+          api_key: process.env.KLEAN_API_KEY,
           "Content-Type": "application/json",
         },
       },
@@ -56,8 +56,7 @@ export class VerificationController {
         url: "https://api.clearout.io/v2/email_verify/instant",
         body: reqBody,
         headers: {
-          Authorization:
-            "4f7ffafafa447cdef751ffb037c91a8a:57ecb252d2f92600ca1132308a0ce486aac7a379cd7dc819af804145e98d7682", // Your API KEY
+          Authorization: process.env.CLEAROUT_API_KEY, // Your API KEY
           "Content-Type": "application/json",
         },
       },
