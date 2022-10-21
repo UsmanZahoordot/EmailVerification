@@ -1,6 +1,6 @@
 import {Verification}  from "../server/models/verification.js";
 export const flushData = async () => {
-  let users= await Verification.find({})
+  let users= await Verification.find({is_valid:true})
   users.map(async (user) => {
     let days=diffDays(new Date(),user.verified_on);
     if(days>15){
