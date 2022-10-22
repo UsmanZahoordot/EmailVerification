@@ -1,8 +1,10 @@
 import { Router } from "express";
 import { VerificationController, verify_email_in_db } from "../controllers/verification_contoller.js";
+import { email_finder_request } from "../controllers/finder_controller.js";
 
 export const router = Router();
 const controller = new VerificationController();
+
 
 var request_counts = {
   klean_api: 0,
@@ -49,4 +51,8 @@ router.get("/", async (req, res) => {
     console.log("CLEAR", request_counts);
     controller.clearout_email_verification(res, email);
   }
+});
+
+router.get("/email-finder", (req, res) => {
+  email_finder_request(res,req.body.name, req.body.domain);
 });
