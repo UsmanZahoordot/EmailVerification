@@ -33,7 +33,7 @@ export class VerificationController {
         const verification = new Verification({
           email: email,
           is_valid: raw_data["is_exist"],
-          is_desposable: raw_data["is_disposable"],
+          is_disposable: raw_data["is_disposable"],
           verified_on: new Date(),
         });
         verification.save((err, doc) => {
@@ -73,7 +73,7 @@ export class VerificationController {
           const verification = new Verification({
             email: email,
             is_valid: raw_data["data"]["status"] == "valid" || false,
-            is_desposable: raw_data["data"]["desposible"] != "no",
+            is_disposable: raw_data["data"]["desposible"] != "no",
             verified_on: new Date(),
           });
           verification.save((err, doc) => {
