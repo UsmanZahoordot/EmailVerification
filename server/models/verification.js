@@ -22,7 +22,7 @@ const verificationSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  disposable_status: {
+  is_desposable: {
     type: Boolean,
     required: true,
   },
