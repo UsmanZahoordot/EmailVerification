@@ -4,6 +4,7 @@ import morgan from "morgan";
 import {connectDB} from './config/db.js';
 import {router} from './server/routes/api_routes.js'
 import bodyParser from 'body-parser';
+import {flushDb} from './server/crons/flushdb.js'
 
 const app = express();
 app.use(morgan('tiny'));
@@ -16,6 +17,7 @@ connectDB();
 app.use(bodyParser.json());
 app.use('/api', router);
 
+flushDb();
 const PORT = process.env.PORT || 3001
 
 app.listen(PORT, () => {
