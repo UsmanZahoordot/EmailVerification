@@ -6,6 +6,7 @@ export const verify_email_in_db = async (email) => {
   return all;
 };
 
+// TODO: Return only verification objects
 export class VerificationController {
   klean_api_request = async (response, email) => {
     var reqBody = {

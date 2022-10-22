@@ -10,8 +10,8 @@ var request_counts = {
 };
 
 var api_limits = {
-  klean_api: 2,
-  clearout_api: 2,
+  klean_api: 50,
+  clearout_api: 500,
 };
 
 setInterval(() => {
@@ -20,7 +20,7 @@ setInterval(() => {
     klean_api: 0,
     clearout_api: 0,
   };
-}, 20000);
+}, 10000);
 
 router.get("/", async (req, res) => {
   let email = req.query.email;
