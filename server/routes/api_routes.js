@@ -42,7 +42,7 @@ router.get("/", async (req, res) => {
     await new Promise((r) => setTimeout(r, 10000));
   }
 
-  if (request_counts["klean_api"] > api_limits["klean_api"]) {
+  if (request_counts["klean_api"] < api_limits["klean_api"]) {
     request_counts["klean_api"]++;
     console.log("KLEAN", request_counts);
 
