@@ -42,20 +42,13 @@ router.get("/", async (req, res) => {
     await new Promise((r) => setTimeout(r, 10000));
   }
 
-  if (request_counts["klean_api"] < api_limits["klean_api"]) {
+  if (request_counts["klean_api"] > api_limits["klean_api"]) {
     request_counts["klean_api"]++;
     console.log("KLEAN", request_counts);
 
     controller.klean_api_request(res, email).then(response => {
-      console.log(response.data);
-      const raw_data = response.data;
-      const verification = new Verification({
-        email: raw_data['record'],
-        is_valid: raw_data["is_exist"],
-        is_disposable: raw_data["is_disposable"],
-        verified_on: new Date(),
-      });
-      console.log(verification);
+      console.log(response);
+      res.send(response);
       return;
     })
     .catch(error => {
@@ -67,14 +60,8 @@ router.get("/", async (req, res) => {
     request_counts["clearout_api"]++;
     controller.clearout_email_verification(res, email).then(response => {
       console.log("clear out");
-      const raw_data = response.data;
-      const verification = new Verification({
-        email: email,
-        is_valid: raw_data["data"]["status"] == "valid" || false,
-        is_disposable: raw_data["data"]["desposible"] != "no",
-        verified_on: new Date(),
-      });
-      console.log(verification);
+      console.log(response);
+      res.send(response);
       return;
     });
   }
