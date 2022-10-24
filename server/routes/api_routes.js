@@ -25,15 +25,11 @@ setInterval(() => {
 }, 10000);
 
 router.get("/", async (req, res) => {
-    var promises = [];
-
-    for (let i = 0; i < req.body.emails.length; i++) {
-      promises.push(verify_email(req.body.emails[i]))
+  Promise.all(req.body.emails.map((email) => verify_email(email))).then(
+    (results) => {
+      res.send(results);
     }
-
-    Promise.all(promises).then((values) => {
-      res.send(values);
-    });
+  );
   
 });
 
@@ -54,7 +50,7 @@ const verify_email = async (email) => {
     await new Promise((r) => setTimeout(r, 10000));
   }
 
-  if (request_counts["klean_api"] > api_limits["klean_api"]) {
+  if (request_counts["klean_api"] < api_limits["klean_api"]) {
     request_counts["klean_api"]++;
     console.log("KLEAN", request_counts);
 
