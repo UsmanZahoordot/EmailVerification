@@ -25,14 +25,26 @@ setInterval(() => {
 }, 10000);
 
 router.get("/", async (req, res) => {
-  let email = req.query.email;
+    var promises = [];
+
+    for (let i = 0; i < req.body.emails.length; i++) {
+      promises.push(verify_email(req.body.emails[i]))
+    }
+
+    Promise.all(promises).then((values) => {
+      res.send(values);
+    });
+  
+});
+
+const verify_email = async (email) => {
 
   const cached_queries = await verify_email_in_db(email);
   console.log(cached_queries);
   if (cached_queries.length > 0) {
     console.log("Found");
-    res.send(cached_queries[0]);
-    return;
+    // res.send(cached_queries[0]);
+    return Promise.resolve(cached_queries[0]);
   }
 
   while (
@@ -48,8 +60,8 @@ router.get("/", async (req, res) => {
 
     controller.klean_api_request(res, email).then(response => {
       console.log(response);
-      res.send(response);
-      return;
+      // res.send(response);
+      return response;
     })
     .catch(error => {
       console.log(error)
@@ -61,11 +73,11 @@ router.get("/", async (req, res) => {
     controller.clearout_email_verification(res, email).then(response => {
       console.log("clear out");
       console.log(response);
-      res.send(response);
-      return;
+      // res.send(response);
+      return response;
     });
   }
-});
+};
 
 router.get("/email-finder", (req, res) => {
   email_finder_request(res,req.body.name, req.body.domain);
