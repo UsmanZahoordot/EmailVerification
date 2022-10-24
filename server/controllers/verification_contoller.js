@@ -8,7 +8,7 @@ export const verify_email_in_db = async (email) => {
 };
 
 export class VerificationController {
-  klean_api_request = async (response, email) => {
+  klean_api_request = async (email) => {
     var reqBody = {
       record: email,
     };
@@ -39,7 +39,7 @@ export class VerificationController {
     });
   };
 
-  clearout_email_verification = async (response, email) => {
+  clearout_email_verification = async (email) => {
     var reqBody = {
       email: email,
     };

@@ -58,24 +58,11 @@ const verify_email = async (email) => {
     request_counts["klean_api"]++;
     console.log("KLEAN", request_counts);
 
-    controller.klean_api_request(res, email).then(response => {
-      console.log(response);
-      // res.send(response);
-      return response;
-    })
-    .catch(error => {
-      console.log(error)
-    });
-
+    return controller.klean_api_request(email);
   } 
   else {
     request_counts["clearout_api"]++;
-    controller.clearout_email_verification(res, email).then(response => {
-      console.log("clear out");
-      console.log(response);
-      // res.send(response);
-      return response;
-    });
+    return controller.clearout_email_verification(email);
   }
 };
 
