@@ -25,7 +25,7 @@ export class VerificationController {
       const raw_data = response.data;
       const verification = new Verification({
         email: raw_data['record'],
-        is_valid: raw_data["is_exist"],
+        is_valid: raw_data["is_exist"] ? true : false,
         is_disposable: raw_data["is_disposable"],
         verified_on: new Date(),
       });
