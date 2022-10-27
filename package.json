@@ -25,6 +25,7 @@
     "node-cron": "^3.0.2",
     "nodemon": "^2.0.20",
     "querystring": "^0.2.1",
+    "redirect-ssl": "^3.0.0",
     "request": "^2.88.2"
   }
 }
