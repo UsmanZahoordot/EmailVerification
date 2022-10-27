@@ -7,19 +7,9 @@ import bodyParser from 'body-parser';
 import {flushDb} from './server/crons/flushdb.js'
 
 const app = express();
+
 app.use(morgan('tiny'));
-
-app.enable('trust proxy')
-
-app.use(function(request, response, next) {
-
-  if (process.env.NODE_ENV != 'development' && !request.secure) {
-     return response.redirect("https://" + request.headers.host + request.url);
-  }
-
-  next();
-})
-
+ 
 config({path:'./config/.env'})
 
 connectDB();
