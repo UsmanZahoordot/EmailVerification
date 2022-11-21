@@ -9,6 +9,7 @@ import { email_finder_request } from "../controllers/finder_controller.js";
 export const router = Router();
 const controller = new VerificationController();
 
+var default_req = "clearout"
 
 router.post("/", async (req, res) => {
   Promise.all(req.body.emails.map((email) => verify_email(email))).then(
@@ -24,6 +25,18 @@ const verify_email = async (email) => {
   if (cached_queries.length > 0) {
     console.log("Found");
     return Promise.resolve(cached_queries[0]);
+  }
+
+  if (default_req == "clearout"){
+    return controller
+    .clearout_email_verification(email)
+    .then((result) => {
+      console.log("clearout_email_verification");
+      return result
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   }
 
   let isResolved = false;
