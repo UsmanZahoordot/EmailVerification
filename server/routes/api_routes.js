@@ -10,7 +10,7 @@ export const router = Router();
 const controller = new VerificationController();
 
 
-router.get("/", async (req, res) => {
+router.post("/", async (req, res) => {
   Promise.all(req.body.emails.map((email) => verify_email(email))).then(
     (results) => {
       res.send(results);
@@ -78,6 +78,6 @@ const verify_email = async (email) => {
     });
 };
 
-router.get("/email-finder", (req, res) => {
+router.post("/email-finder", (req, res) => {
   email_finder_request(res, req.body.name, req.body.domain);
 });

@@ -9,6 +9,8 @@ import {flushDb} from './server/crons/flushdb.js'
 const app = express();
 
 app.use(morgan('tiny'));
+config({path:'./config/.env'})
+
 
 app.enable('trust proxy')
 
@@ -21,7 +23,6 @@ app.use(function(request, response, next) {
   next();
 })
 
-config({path:'./config/.env'})
 
 connectDB();
 
