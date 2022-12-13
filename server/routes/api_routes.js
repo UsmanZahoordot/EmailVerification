@@ -106,12 +106,3 @@ router.post("/signup", async (req, res) => {
     res.send("Failure");
   }
 });
-
-/*
-request body for / 
-{
-  "filename": "test.csv",
-  "username": "test",
-  "emails": ["abc@gmail.com", "test@test.com"]
-}
-*/
