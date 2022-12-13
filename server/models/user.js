@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
     minlength: 3,
     maxlength: 50,
   },
+  is_admin: {
+    type: Boolean,
+    required: true,
+  },
   credits: {
     type: Number,
     required: true,
