@@ -4,7 +4,7 @@ import {
   verify_email_in_db,
 } from "../controllers/verification_contoller.js";
 
-import { userSignup } from "../controllers/user_controller.js";
+import { addVerificationToUser, userSignup } from "../controllers/user_controller.js";
 import { email_finder_request } from "../controllers/finder_controller.js";
 
 export const router = Router();
