@@ -3,17 +3,33 @@ import {
   VerificationController,
   verify_email_in_db,
 } from "../controllers/verification_contoller.js";
-import { email_finder_request } from "../controllers/finder_controller.js";
 
+import { userSignup } from "../controllers/user_controller.js";
+import { email_finder_request } from "../controllers/finder_controller.js";
 
 export const router = Router();
 const controller = new VerificationController();
 
-
 router.post("/", async (req, res) => {
+  const filename = req.body.filename;
+
   Promise.all(req.body.emails.map((email) => verify_email(email))).then(
     (results) => {
       res.send(results);
+
+      if (!filename) {
+        return;
+      }
+      const valid_count = results.filter((result) => result.is_valid).length;
+      const invalid_count = results.filter((result) => !result.is_valid).length;
+      addVerificationToUser(
+        req.body.username,
+        filename,
+        valid_count,
+        invalid_count,
+        Date.now(),
+        req.body.emails,
+      );
     }
   );
 });
@@ -80,4 +96,8 @@ const verify_email = async (email) => {
 
 router.post("/email-finder", (req, res) => {
   email_finder_request(res, req.body.name, req.body.domain);
+});
+
+router.post("/signup", async (req, res) => {
+  userSignup(req.body.firstName, req.body.lastName, req.body.username);
 });
