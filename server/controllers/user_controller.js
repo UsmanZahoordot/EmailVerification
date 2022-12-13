@@ -26,6 +26,7 @@ const addVerificationToUser = async (
   const user = await User.findOne({
     username: username,
   });
+  if (!user) return false;
 
   const verificationQuery = new VerificationQuery({
     user: user._id,
@@ -35,6 +36,8 @@ const addVerificationToUser = async (
     timestamp: timestamp,
     emails: emails,
   });
+  verificationQuery.save();
+  return true;
 };
 
 export { userSignup, addVerificationToUser };
