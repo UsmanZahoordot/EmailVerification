@@ -1,15 +1,18 @@
 import { User } from "../models/user.js";
 import { VerificationQuery } from "../models/verification_query.js";
 
-const userSignup = async (firstname, lastname, fullname) => {
+const userSignup = async (firstname, lastname, fullname, is_admin) => {
   const user = new User({
     firstName: firstname,
     lastName: lastname,
     username: fullname,
+    is_admin: is_admin,
     credits: 0,
   });
 
   const result = await user.save();
+  if (!result) return false;
+  return true;
 };
 
 const addVerificationToUser = async (

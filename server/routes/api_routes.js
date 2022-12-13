@@ -99,5 +99,19 @@ router.post("/email-finder", (req, res) => {
 });
 
 router.post("/signup", async (req, res) => {
-  userSignup(req.body.firstName, req.body.lastName, req.body.username);
+  const success = await userSignup(req.body.firstName, req.body.lastName, req.body.username, req.body.is_admin);
+  if (success) {
+    res.send("Success");
+  } else {
+    res.send("Failure");
+  }
 });
+
+/*
+request body for / 
+{
+  "filename": "test.csv",
+  "username": "test",
+  "emails": ["abc@gmail.com", "test@test.com"]
+}
+*/
