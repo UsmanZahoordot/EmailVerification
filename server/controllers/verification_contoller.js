@@ -6,6 +6,20 @@ export const verify_email_in_db = async (email) => {
   return all;
 };
 
+export const get_all_emails = async (page) => {
+  const all = await Verification.find({})
+    .limit(20)
+    .skip((page - 1) * 20);
+  // return only emails, date and status
+  return all.map((item) => {
+    return {
+      email: item.email,
+      verified_on: item.verified_on,
+      is_valid: item.is_valid,
+    };
+  });
+};
+
 export class VerificationController {
   klean_api_request = async (email) => {
     var reqBody = {

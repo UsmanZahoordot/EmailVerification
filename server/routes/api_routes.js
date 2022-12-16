@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   VerificationController,
   verify_email_in_db,
+  get_all_emails,
 } from "../controllers/verification_contoller.js";
 
 import {
@@ -124,9 +125,11 @@ router.post("/user-queries", async (req, res) => {
 
 router.post("/reverify-file", async (req, res) => {
   const emails = await getVerificationByID(req.body.username, req.body.id);
-  Promise.all(emails.map((email) => verify_email(email))).then(
-    (results) => {
-      res.send(results);
-    }
-  );
+  Promise.all(emails.map((email) => verify_email(email))).then((results) => {
+    res.send(results);
+  });
+});
+
+router.post("/get-all-emails", async (req, res) => {
+  res.send(await get_all_emails(req.query.page));
 });
