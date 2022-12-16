@@ -4,7 +4,12 @@ import {
   verify_email_in_db,
 } from "../controllers/verification_contoller.js";
 
-import { addVerificationToUser, userSignup } from "../controllers/user_controller.js";
+import {
+  addVerificationToUser,
+  getUserQueries,
+  getVerificationByID,
+  userSignup,
+} from "../controllers/user_controller.js";
 import { email_finder_request } from "../controllers/finder_controller.js";
 
 export const router = Router();
@@ -28,7 +33,7 @@ router.post("/", async (req, res) => {
         valid_count,
         invalid_count,
         Date.now(),
-        req.body.emails,
+        req.body.emails
       );
     }
   );
@@ -99,10 +104,29 @@ router.post("/email-finder", (req, res) => {
 });
 
 router.post("/signup", async (req, res) => {
-  const success = await userSignup(req.body.firstName, req.body.lastName, req.body.username, req.body.is_admin);
+  const success = await userSignup(
+    req.body.firstName,
+    req.body.lastName,
+    req.body.username,
+    req.body.is_admin
+  );
   if (success) {
     res.send("Success");
   } else {
     res.send("Failure");
   }
+});
+
+router.post("/user-queries", async (req, res) => {
+  const queries = await getUserQueries(req.body.username);
+  res.send(queries);
+});
+
+router.post("/reverify-file", async (req, res) => {
+  const emails = await getVerificationByID(req.body.username, req.body.id);
+  Promise.all(emails.map((email) => verify_email(email))).then(
+    (results) => {
+      res.send(results);
+    }
+  );
 });

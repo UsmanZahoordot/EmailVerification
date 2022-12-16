@@ -40,4 +40,32 @@ const addVerificationToUser = async (
   return true;
 };
 
-export { userSignup, addVerificationToUser };
+const getUserQueries = async (username) => {
+  const user = await User.findOne({
+    username: username,
+  });
+  if (!user) {
+    console.log("asd");
+    return [];
+  }
+
+  const queries = await VerificationQuery.find({
+    user: user._id,
+  });
+  return queries;
+};
+
+const getEmailsByFileID = async (username, id) => {
+  const user = await User.findOne({
+    username: username,
+  });
+  if (!user) return [];
+
+  const query = await VerificationQuery.findOne({
+    user: user._id,
+    date: id,
+  });
+  return query.emails;
+}
+
+export { userSignup, addVerificationToUser, getUserQueries, getEmailsByFileID as getVerificationByID };
