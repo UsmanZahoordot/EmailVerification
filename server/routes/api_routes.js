@@ -11,6 +11,10 @@ import {
   getUserQueries,
   getVerificationByID,
   userSignup,
+  getUsers,
+  getUsersCount,
+  updateUser,
+  deleteUser,
 } from "../controllers/user_controller.js";
 import { email_finder_request } from "../controllers/finder_controller.js";
 
@@ -110,7 +114,9 @@ router.post("/signup", async (req, res) => {
     req.body.firstName,
     req.body.lastName,
     req.body.username,
-    req.body.is_admin
+    req.body.is_admin,
+    req.body.email,
+    req.body.credits,
   );
   if (success) {
     res.send("Success");
@@ -139,4 +145,39 @@ router.post("/emails-count", async (req, res) => {
   const value = (await get_all_emails_count());
   console.log(value);
   res.send({"count": value})
+});
+
+router.post("/users-count", async (req, res) => {
+  const value = (await getUsersCount());
+  console.log(value);
+  res.send({"count": value})
+});
+
+router.post("/all-users", async (req, res) => {
+  res.send(await getUsers(req.query.page));
+});
+
+// update user with these arguments "email, firstName, lastName, credits"
+router.post("/update-user", async (req, res) => {
+  const success = await updateUser(
+    req.body.email,
+    req.body.firstName,
+    req.body.lastName,
+    req.body.credits,
+    req.body.username
+  );
+  if (success) {
+    res.send("Success");
+  } else {
+    res.send("Failure");
+  }
+});
+
+router.post("/delete-user", async (req, res) => {
+  const success = await deleteUser(req.body.email);
+  if (success) {
+    res.send("Success");
+  } else {
+    res.send("Failure");
+  }
 });
