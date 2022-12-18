@@ -3,6 +3,7 @@ import {
   VerificationController,
   verify_email_in_db,
   get_all_emails,
+  get_all_emails_count,
 } from "../controllers/verification_contoller.js";
 
 import {
@@ -132,4 +133,10 @@ router.post("/reverify-file", async (req, res) => {
 
 router.post("/get-all-emails", async (req, res) => {
   res.send(await get_all_emails(req.query.page));
+});
+
+router.post("/emails-count", async (req, res) => {
+  const value = (await get_all_emails_count());
+  console.log(value);
+  res.send({"count": value})
 });

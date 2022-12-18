@@ -1,8 +1,15 @@
 import { Verification } from "../models/verification.js";
 import axios from "axios";
+import { stringify } from "querystring";
 
 export const verify_email_in_db = async (email) => {
   const all = await Verification.find({ email: email });
+  return all;
+};
+
+export const get_all_emails_count = async () => {
+  const all = await Verification.countDocuments({});
+  console.log("All", all);
   return all;
 };
 
