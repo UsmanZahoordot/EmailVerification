@@ -1,14 +1,23 @@
 import { User } from "../models/user.js";
 import { VerificationQuery } from "../models/verification_query.js";
+import { Verification } from "../models/verification.js";
+import mongoose from "mongoose";
 
-const userSignup = async (firstname, lastname, fullname, is_admin, email, credits) => {
+const userSignup = async (
+  firstname,
+  lastname,
+  fullname,
+  is_admin,
+  email,
+  credits
+) => {
   const user = new User({
     firstName: firstname,
     lastName: lastname,
     username: fullname,
     is_admin: is_admin,
     credits: credits,
-    email: email
+    email: email,
   });
 
   const result = await user.save();
@@ -67,7 +76,7 @@ const getEmailsByFileID = async (username, id) => {
     date: id,
   });
   return query.emails;
-}
+};
 
 const getUsersCount = async () => {
   const count = await User.countDocuments();
@@ -79,14 +88,14 @@ const getUsers = async (page) => {
   const users = await User.find()
     .skip((page - 1) * 10)
     .limit(10);
-    return users.map((item) => {
-      return {
-        "firstName": item.firstName,
-        "lastName": item.lastName,
-        "credits": item.credits,
-        "email": item.email,
-      };
-    });
+  return users.map((item) => {
+    return {
+      firstName: item.firstName,
+      lastName: item.lastName,
+      credits: item.credits,
+      email: item.email,
+    };
+  });
 };
 
 // find user on email and update the details provided in arguments
@@ -118,6 +127,93 @@ const deleteUser = async (email) => {
   return true;
 };
 
+const checkAdmin = async (username) => {
+  const user = await User.findOne({
+    username: username,
+  });
+  if (!user) return false;
+  return user.is_admin;
+};
 
+/*
+const verificationSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    minlength: 5,
+    maxlength: 50,
+  },
+  is_valid: {
+    type: Boolean,
+    required: true,
+  },
+  verified_on: {
+    type: Date,
+    required: true,
+  },
+  is_disposable: {
+    type: Boolean,
+    required: true,
+  },
+});
+* */
+const get_daily_count = async (username, start_date, end_date) => {
+  let counts_aggregate = VerificationQuery.aggregate([]);
+  if (username != undefined) {
+    counts_aggregate = counts_aggregate.match({
+      user: mongoose.Types.ObjectId(username),
+    });
+  }
 
-export { userSignup, addVerificationToUser, getUserQueries, getEmailsByFileID as getVerificationByID, getUsers, getUsersCount, updateUser, deleteUser};
+  const counts = await counts_aggregate
+    .match({
+      timestamp: {
+        $gte: start_date,
+        $lte: end_date,
+      },
+    })
+    .group({
+      _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
+      total: { $sum: { $add: ["$valid_count", "$invalid_count"] } },
+      count: { $sum: 1 },
+    })
+    .project({
+      timestamp: 1,
+      total: 1,
+      count: 1,
+    })
+    .sort({ _id: 1 });
+
+  const getDates = (d1, d2) => {
+    var oneDay = 24 * 3600 * 1000;
+    for (var d = [], ms = d1 * 1, last = d2 * 1; ms < last; ms += oneDay) {
+      d.push(new Date(ms));
+    }
+    return d;
+  }
+
+  let countsDict = {};
+  counts.forEach((item) => {
+    countsDict[item._id] = item;
+  });
+
+  let dates = getDates(start_date, end_date);
+  return dates.map((item) => ({
+    _id: item.toISOString().slice(0, 10),
+    total: (countsDict[item.toISOString().slice(0, 10)] || {})["total"] || 0,
+    count: (countsDict[item.toISOString().slice(0, 10)] || {})["count"] || 0,
+  }));
+};
+
+export {
+  userSignup,
+  addVerificationToUser,
+  checkAdmin,
+  get_daily_count,
+  getUserQueries,
+  getEmailsByFileID as getVerificationByID,
+  getUsers,
+  getUsersCount,
+  updateUser,
+  deleteUser,
+};

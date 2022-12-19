@@ -8,6 +8,8 @@ import {
 
 import {
   addVerificationToUser,
+  checkAdmin,
+  get_daily_count,
   getUserQueries,
   getVerificationByID,
   userSignup,
@@ -116,7 +118,7 @@ router.post("/signup", async (req, res) => {
     req.body.username,
     req.body.is_admin,
     req.body.email,
-    req.body.credits,
+    req.body.credits
   );
   if (success) {
     res.send("Success");
@@ -142,15 +144,15 @@ router.post("/get-all-emails", async (req, res) => {
 });
 
 router.post("/emails-count", async (req, res) => {
-  const value = (await get_all_emails_count());
+  const value = await get_all_emails_count();
   console.log(value);
-  res.send({"count": value})
+  res.send({ count: value });
 });
 
 router.post("/users-count", async (req, res) => {
-  const value = (await getUsersCount());
+  const value = await getUsersCount();
   console.log(value);
-  res.send({"count": value})
+  res.send({ count: value });
 });
 
 router.post("/all-users", async (req, res) => {
@@ -180,4 +182,22 @@ router.post("/delete-user", async (req, res) => {
   } else {
     res.send("Failure");
   }
+});
+
+router.get("/is_admin", async (req, res) => {
+  const is_admin = await checkAdmin(req.query.username);
+  res.send({
+    is_admin: is_admin,
+  });
+});
+
+router.post("/get_daily_count", async (req, res) => {
+  const username = req.body.username;
+  const start_date = new Date(req.body.start_date);
+  const end_date = new Date(req.body.end_date);
+
+  const daily_count = await get_daily_count(username, start_date, end_date);
+  res.send({
+    data: daily_count,
+  });
 });
