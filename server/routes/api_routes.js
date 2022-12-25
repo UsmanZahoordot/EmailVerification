@@ -10,6 +10,7 @@ import {
   addVerificationToUser,
   checkAdmin,
   get_daily_count,
+  get_daily,
   getUserQueries,
   getVerificationByID,
   userSignup,
@@ -133,7 +134,7 @@ router.post("/user-queries", async (req, res) => {
 });
 
 router.post("/reverify-file", async (req, res) => {
-  const emails = await getVerificationByID(req.body.username, req.body.id);
+  const emails = await getVerificationByID(req.body.username, req.body.id, req.body.filename);
   Promise.all(emails.map((email) => verify_email(email))).then((results) => {
     res.send(results);
   });
@@ -197,6 +198,17 @@ router.post("/get_daily_count", async (req, res) => {
   const end_date = new Date(req.body.end_date);
 
   const daily_count = await get_daily_count(username, start_date, end_date);
+  res.send({
+    data: daily_count,
+  });
+});
+
+router.post("/get_daily", async (req, res) => {
+  const username = req.body.username;
+  const start_date = new Date(req.body.start_date);
+  const end_date = new Date(req.body.end_date);
+
+  const daily_count = await get_daily(username, start_date, end_date);
   res.send({
     data: daily_count,
   });

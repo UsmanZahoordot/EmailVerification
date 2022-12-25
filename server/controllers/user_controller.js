@@ -65,7 +65,7 @@ const getUserQueries = async (username) => {
   return queries;
 };
 
-const getEmailsByFileID = async (username, id) => {
+const getEmailsByFileID = async (username, id, filename) => {
   const user = await User.findOne({
     username: username,
   });
@@ -74,6 +74,7 @@ const getEmailsByFileID = async (username, id) => {
   const query = await VerificationQuery.findOne({
     user: user._id,
     date: id,
+    filename: filename,
   });
   return query.emails;
 };
@@ -132,6 +133,7 @@ const checkAdmin = async (username) => {
     username: username,
   });
   if (!user) return false;
+  console.log("user=", user.is_admin);
   return user.is_admin;
 };
 
@@ -205,11 +207,33 @@ const get_daily_count = async (username, start_date, end_date) => {
   }));
 };
 
+const get_daily = async (username, start_date, end_date) => {
+  let counts_aggregate = Verification.aggregate([]);
+
+
+  if (username != undefined) {
+    counts_aggregate = counts_aggregate.match({
+      user: mongoose.Types.ObjectId(username),
+    });
+  }
+
+  const data = await Verification.aggregate([])
+    .match({
+      verified_on: {
+        $gte: start_date,
+        $lte: end_date,
+      },
+    })
+  
+  return {"data": data, "count": data.length};
+};
+
 export {
   userSignup,
   addVerificationToUser,
   checkAdmin,
   get_daily_count,
+  get_daily,
   getUserQueries,
   getEmailsByFileID as getVerificationByID,
   getUsers,
