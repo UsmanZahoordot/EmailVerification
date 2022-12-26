@@ -146,7 +146,7 @@ router.post("/user-queries", async (req, res) => {
 });
 
 router.post("/reverify-file", async (req, res) => {
-  const emails = await getVerificationByID(req.body.username, req.body.id, req.body.filename);
+  const emails = await getVerificationByID(req.body.username, req.body.id, req.body.filename, req.body.mode);
   Promise.all(emails.map((email) => verify_email(email))).then((results) => {
     res.send(results);
   });

@@ -65,7 +65,7 @@ const getUserQueries = async (username) => {
   return queries;
 };
 
-const getEmailsByFileID = async (username, id, filename) => {
+const getEmailsByFileID = async (username, id, filename, mode) => {
   const user = await User.findOne({
     username: username,
   });
@@ -76,7 +76,13 @@ const getEmailsByFileID = async (username, id, filename) => {
     date: id,
     filename: filename,
   });
-  return query.emails;
+  return query.emails.filter(
+    (email) =>
+      (mode === "all") ||
+      (mode === "valid" && email.valid) ||
+      (mode === "invalid" && !email.valid) ||
+      (mode === "disposable" && email.disposable)
+  );
 };
 
 const getUsersCount = async () => {
@@ -256,7 +262,6 @@ const deductCredits = async (username, credits) => {
   });
   if (!user) return false;
 
-  
   if (user.credits - credits < 0) {
     return false;
   }
