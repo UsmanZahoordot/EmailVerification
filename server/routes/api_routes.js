@@ -207,8 +207,9 @@ router.post("/get_daily", async (req, res) => {
   const username = req.body.username;
   const start_date = new Date(req.body.start_date);
   const end_date = new Date(req.body.end_date);
-
-  const daily_count = await get_daily(username, start_date, end_date);
+  const page = req.body.page;
+  const limit = req.body.limit;
+  const daily_count = await get_daily(username, start_date, end_date, page, limit);
   res.send({
     data: daily_count,
   });

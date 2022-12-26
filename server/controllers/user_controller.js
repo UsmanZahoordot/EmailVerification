@@ -192,7 +192,7 @@ const get_daily_count = async (username, start_date, end_date) => {
       d.push(new Date(ms));
     }
     return d;
-  }
+  };
 
   let countsDict = {};
   counts.forEach((item) => {
@@ -207,25 +207,51 @@ const get_daily_count = async (username, start_date, end_date) => {
   }));
 };
 
-const get_daily = async (username, start_date, end_date) => {
+const get_daily = async (username, start_date, end_date, page, limit) => {
   let counts_aggregate = Verification.aggregate([]);
-
 
   if (username != undefined) {
     counts_aggregate = counts_aggregate.match({
       user: mongoose.Types.ObjectId(username),
     });
   }
+  let count = 0;
+  await Verification.aggregate([
+    {
+      $match: {
+        verified_on: {
+          $gte: start_date,
+          $lte: end_date,
+        },
+      },
+    },
+    {
+      $count: "count",
+    },
+  ]).then((result) => {
+    if (result.length != 0) {
+      count = result[0].count;
+    }
+  });
 
-  const data = await Verification.aggregate([])
-    .match({
+  console.log("start date", start_date);
+  console.log("end date", end_date);
+  console.log("page", page);
+
+  const data = await Verification.find(
+    {
       verified_on: {
         $gte: start_date,
         $lte: end_date,
       },
-    })
-  
-  return {"data": data, "count": data.length};
+      
+    },
+   
+  )
+  .limit(limit)
+  .skip((page - 1) * 10);
+
+  return { data: data, count: count, page: page };
 };
 
 export {
