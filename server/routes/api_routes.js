@@ -18,6 +18,7 @@ import {
   getUsersCount,
   updateUser,
   deleteUser,
+  deductCredits
 } from "../controllers/user_controller.js";
 import { email_finder_request } from "../controllers/finder_controller.js";
 
@@ -25,6 +26,17 @@ export const router = Router();
 const controller = new VerificationController();
 
 router.post("/", async (req, res) => {
+  if (req.body.username == undefined) {
+    res.send("Username not provided");
+    return;
+  }
+
+  const allow = deductCredits(req.body.username, req.body.emails.length);
+  if (!allow) {
+    res.status(500).send("Not enough credits");
+    return;
+  }
+
   const filename = req.body.filename;
 
   Promise.all(req.body.emails.map((email) => verify_email(email))).then(

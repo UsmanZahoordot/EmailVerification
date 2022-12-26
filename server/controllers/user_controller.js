@@ -238,20 +238,32 @@ const get_daily = async (username, start_date, end_date, page, limit) => {
   console.log("end date", end_date);
   console.log("page", page);
 
-  const data = await Verification.find(
-    {
-      verified_on: {
-        $gte: start_date,
-        $lte: end_date,
-      },
-      
+  const data = await Verification.find({
+    verified_on: {
+      $gte: start_date,
+      $lte: end_date,
     },
-   
-  )
-  .limit(limit)
-  .skip((page - 1) * 10);
+  })
+    .limit(limit)
+    .skip((page - 1) * 10);
 
   return { data: data, count: count, page: page };
+};
+
+const deductCredits = async (username, credits) => {
+  const user = await User.findOne({
+    username: username,
+  });
+  if (!user) return false;
+
+  
+  if (user.credits - credits < 0) {
+    return false;
+  }
+  user.credits = user.credits - credits;
+  const result = await user.save();
+  if (!result) return false;
+  return true;
 };
 
 export {
@@ -266,4 +278,5 @@ export {
   getUsersCount,
   updateUser,
   deleteUser,
+  deductCredits,
 };
