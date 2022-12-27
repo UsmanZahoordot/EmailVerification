@@ -63,9 +63,7 @@ router.post("/", async (req, res) => {
 
 const verify_email = async (email) => {
   const cached_queries = await verify_email_in_db(email);
-  console.log(cached_queries);
   if (cached_queries.length > 0) {
-    console.log("Found");
     return Promise.resolve(cached_queries[0]);
   }
 
@@ -147,14 +145,21 @@ router.post("/user-queries", async (req, res) => {
 });
 
 router.post("/reverify-file", async (req, res) => {
+  const mode = req.body.mode;
   const emails = await getVerificationByID(
     req.body.username,
     req.body.id,
-    req.body.filename,
-    req.body.mode
+    req.body.filename
   );
   Promise.all(emails.map((email) => verify_email(email))).then((results) => {
-    res.send(results);
+    const filtered_results = results.filter(
+      (result) =>
+        mode === "all" ||
+        (mode === "valid" && result.is_valid) ||
+        (mode === "invalid" && !result.is_valid) ||
+        (mode === "disposable" && result.is_disposable)
+    );
+    res.send(filtered_results);
   });
 });
 
