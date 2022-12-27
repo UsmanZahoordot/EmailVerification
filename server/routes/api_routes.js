@@ -11,6 +11,7 @@ import {
   checkAdmin,
   get_daily_count,
   get_daily,
+  getCredits,
   getUserQueries,
   getVerificationByID,
   userSignup,
@@ -18,7 +19,7 @@ import {
   getUsersCount,
   updateUser,
   deleteUser,
-  deductCredits
+  deductCredits,
 } from "../controllers/user_controller.js";
 import { email_finder_request } from "../controllers/finder_controller.js";
 
@@ -146,7 +147,12 @@ router.post("/user-queries", async (req, res) => {
 });
 
 router.post("/reverify-file", async (req, res) => {
-  const emails = await getVerificationByID(req.body.username, req.body.id, req.body.filename, req.body.mode);
+  const emails = await getVerificationByID(
+    req.body.username,
+    req.body.id,
+    req.body.filename,
+    req.body.mode
+  );
   Promise.all(emails.map((email) => verify_email(email))).then((results) => {
     res.send(results);
   });
@@ -221,8 +227,22 @@ router.post("/get_daily", async (req, res) => {
   const end_date = new Date(req.body.end_date);
   const page = req.body.page;
   const limit = req.body.limit;
-  const daily_count = await get_daily(username, start_date, end_date, page, limit);
+  const daily_count = await get_daily(
+    username,
+    start_date,
+    end_date,
+    page,
+    limit
+  );
   res.send({
     data: daily_count,
+  });
+});
+
+router.post("/user-credits", async (req, res) => {
+  const credits = await getCredits(req.body.user_id);
+  console.log(req.body);
+  res.send({
+    credits: credits,
   });
 });

@@ -92,7 +92,11 @@ const getUsersCount = async () => {
 
 // get all user in pagination with 10 users per page
 const getUsers = async (page) => {
-  const users = await User.find()
+  const users = await User.find(
+    {
+      is_admin: false,
+    }
+  )
     .skip((page - 1) * 10)
     .limit(10);
   return users.map((item) => {
@@ -271,6 +275,14 @@ const deductCredits = async (username, credits) => {
   return true;
 };
 
+const getCredits = async (username) => {
+  const user = await User.findOne({
+    username: username,
+  });
+  if (!user) return null;
+  return user.credits;
+};
+
 export {
   userSignup,
   addVerificationToUser,
@@ -284,4 +296,5 @@ export {
   updateUser,
   deleteUser,
   deductCredits,
+  getCredits,
 };
