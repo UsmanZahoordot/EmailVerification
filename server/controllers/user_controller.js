@@ -55,7 +55,6 @@ const getUserQueries = async (username) => {
     username: username,
   });
   if (!user) {
-    console.log("asd");
     return [];
   }
 
@@ -65,7 +64,7 @@ const getUserQueries = async (username) => {
   return queries;
 };
 
-const getEmailsByFileID = async (username, id, filename, mode) => {
+const getEmailsByFileID = async (username, id, filename) => {
   const user = await User.findOne({
     username: username,
   });
@@ -76,13 +75,7 @@ const getEmailsByFileID = async (username, id, filename, mode) => {
     date: id,
     filename: filename,
   });
-  return query.emails.filter(
-    (email) =>
-      (mode === "all") ||
-      (mode === "valid" && email.valid) ||
-      (mode === "invalid" && !email.valid) ||
-      (mode === "disposable" && email.disposable)
-  );
+  return query.emails;
 };
 
 const getUsersCount = async () => {
@@ -147,28 +140,6 @@ const checkAdmin = async (username) => {
   return user.is_admin;
 };
 
-/*
-const verificationSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    minlength: 5,
-    maxlength: 50,
-  },
-  is_valid: {
-    type: Boolean,
-    required: true,
-  },
-  verified_on: {
-    type: Date,
-    required: true,
-  },
-  is_disposable: {
-    type: Boolean,
-    required: true,
-  },
-});
-* */
 const get_daily_count = async (username, start_date, end_date) => {
   let counts_aggregate = VerificationQuery.aggregate([]);
   if (username != undefined) {
