@@ -43,7 +43,7 @@ router.post("/", async (req, res) => {
   Promise.all(req.body.emails.map((email) => verify_email(email))).then(
     (results) => {
       res.send(results);
-
+      console.log("result\n", results);
       if (!filename) {
         return;
       }
@@ -70,53 +70,56 @@ const verify_email = async (email) => {
   let isResolved = false;
   let verificationStatus = null;
 
-  controller
-    .klean_api_request(email)
-    .then((result) => {
-      if (!isResolved) {
-        isResolved = true;
-        verificationStatus = result;
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  console.log("klean called");
+  return controller.klean_api_request(email);
 
-  await new Promise((r) => setTimeout(r, 5000));
+  // return controller
+  //   .klean_api_request(email)
+  //   .then((result) => {
+  //     if (!isResolved) {
+  //       isResolved = true;
+  //       verificationStatus = result;
+  //     }
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
 
-  if (isResolved) {
-    return verificationStatus;
-  }
+  // await new Promise((r) => setTimeout(r, 5000));
 
-  controller
-    .klean_api_request(email)
-    .then((result) => {
-      if (!isResolved) {
-        isResolved = true;
-        verificationStatus = result;
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  // if (isResolved) {
+  //   return verificationStatus;
+  // }
 
-  await new Promise((r) => setTimeout(r, 5000));
-  if (isResolved) {
-    return verificationStatus;
-  }
+  // controller
+  //   .klean_api_request(email)
+  //   .then((result) => {
+  //     if (!isResolved) {
+  //       isResolved = true;
+  //       verificationStatus = result;
+  //     }
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
 
-  return controller
-    .clearout_email_verification(email)
-    .then((result) => {
-      if (!isResolved) {
-        isResolved = true;
-        verificationStatus = result;
-        return result;
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  // await new Promise((r) => setTimeout(r, 5000));
+  // if (isResolved) {
+  //   return verificationStatus;
+  // }
+
+  // return controller
+  //   .clearout_email_verification(email)
+  //   .then((result) => {
+  //     if (!isResolved) {
+  //       isResolved = true;
+  //       verificationStatus = result;
+  //       return result;
+  //     }
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
 };
 
 router.post("/email-finder", (req, res) => {
