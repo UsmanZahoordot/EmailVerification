@@ -26,7 +26,7 @@ import { email_finder_request } from "../controllers/finder_controller.js";
 export const router = Router();
 const controller = new VerificationController();
 
-router.post("/", async (req, res) => {
+router.post("/verify", async (req, res) => {
   if (req.body.username == undefined) {
     res.send("Username not provided");
     return;
@@ -57,6 +57,15 @@ router.post("/", async (req, res) => {
         Date.now(),
         req.body.emails
       );
+    }
+  );
+
+})
+
+router.post("/", async (req, res) => {
+  Promise.all(req.body.emails.map((email) => verify_email(email))).then(
+    (results) => {
+      res.send(results);
     }
   );
 });
