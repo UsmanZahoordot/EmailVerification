@@ -60,7 +60,7 @@ const getUserQueries = async (username) => {
 
   const queries = await VerificationQuery.find({
     user: user._id,
-  });
+  }).sort({timestamp: - 1});
   return queries;
 };
 
