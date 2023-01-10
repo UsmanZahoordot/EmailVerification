@@ -60,8 +60,33 @@ const getUserQueries = async (username) => {
 
   const queries = await VerificationQuery.find({
     user: user._id,
-  }).sort({timestamp: - 1});
+  }).sort({ timestamp: -1 });
   return queries;
+};
+
+const getUserQueriesPagination = async (username, page) => {
+  const PAGE_SIZE = 5;
+  const user = await User.findOne({
+    username: username,
+  });
+  if (!user) {
+    return [];
+  }
+  const queries = await VerificationQuery.find({
+    user: user._id,
+  })
+    .skip((page - 1) * PAGE_SIZE)
+    .limit(PAGE_SIZE)
+    .sort({ timestamp: -1 });
+  
+  const page_count = (await VerificationQuery.countDocuments({
+    user: user._id,
+  }) - 1) / PAGE_SIZE + 1;
+
+  return {
+    queries: queries,
+    page_count: page_count,
+  }
 };
 
 const getEmailsByFileID = async (username, id, filename) => {
@@ -85,11 +110,9 @@ const getUsersCount = async () => {
 
 // get all user in pagination with 10 users per page
 const getUsers = async (page) => {
-  const users = await User.find(
-    {
-      is_admin: false,
-    }
-  )
+  const users = await User.find({
+    is_admin: false,
+  })
     .skip((page - 1) * 10)
     .limit(10);
   return users.map((item) => {
@@ -261,6 +284,7 @@ export {
   get_daily_count,
   get_daily,
   getUserQueries,
+  getUserQueriesPagination,
   getEmailsByFileID as getVerificationByID,
   getUsers,
   getUsersCount,

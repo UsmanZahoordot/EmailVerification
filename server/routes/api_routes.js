@@ -20,6 +20,7 @@ import {
   updateUser,
   deleteUser,
   deductCredits,
+  getUserQueriesPagination,
 } from "../controllers/user_controller.js";
 import { email_finder_request } from "../controllers/finder_controller.js";
 
@@ -152,7 +153,8 @@ router.post("/signup", async (req, res) => {
 });
 
 router.post("/user-queries", async (req, res) => {
-  const queries = await getUserQueries(req.body.username);
+  // const queries = await getUserQueries(req.body.username);
+  const queries = await getUserQueriesPagination(req.body.username, req.body.page);
   res.send(queries);
 });
 
