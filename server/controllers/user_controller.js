@@ -46,7 +46,7 @@ const addVerificationToUser = async (
     timestamp: timestamp,
     emails: emails,
   });
-  verificationQuery.save();
+  await verificationQuery.save();
   return true;
 };
 
@@ -81,7 +81,7 @@ const getUserQueriesPagination = async (username, page) => {
   
   const page_count = (await VerificationQuery.countDocuments({
     user: user._id,
-  }) - 1) / PAGE_SIZE + 1;
+  }) - 1) / PAGE_SIZE;
 
   return {
     queries: queries,
@@ -159,7 +159,6 @@ const checkAdmin = async (username) => {
     username: username,
   });
   if (!user) return false;
-  console.log("user=", user.is_admin);
   return user.is_admin;
 };
 
@@ -192,7 +191,7 @@ const get_daily_count = async (username, start_date, end_date) => {
 
   const getDates = (d1, d2) => {
     var oneDay = 24 * 3600 * 1000;
-    for (var d = [], ms = d1 * 1, last = d2 * 1; ms < last; ms += oneDay) {
+    for (var d = [], ms = d1 * 1, last = d2 * 1; ms <= last; ms += oneDay) {
       d.push(new Date(ms));
     }
     return d;
@@ -238,9 +237,6 @@ const get_daily = async (username, start_date, end_date, page, limit) => {
     }
   });
 
-  console.log("start date", start_date);
-  console.log("end date", end_date);
-  console.log("page", page);
 
   const data = await Verification.find({
     verified_on: {

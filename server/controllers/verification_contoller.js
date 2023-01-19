@@ -9,7 +9,6 @@ export const verify_email_in_db = async (email) => {
 
 export const get_all_emails_count = async () => {
   const all = await Verification.countDocuments({});
-  console.log("All", all);
   return all;
 };
 
@@ -47,7 +46,6 @@ export class VerificationController {
         options
       )
       .then((response) => {
-        console.log(response.data);
         const raw_data = response.data;
         const verification = new Verification({
           email: raw_data["record"],
@@ -57,11 +55,14 @@ export class VerificationController {
         });
 
         verification.save((err, doc) => {
-          if (!err) console.log("success", "User added successfully!");
-          else console.log("Error during record insertion : " + err);
+          // if (!err) console.log("success", "User added successfully!");
+          // else console.log("Error during record insertion : " + err);
         });
 
         return verification;
+      })
+      .catch((err) => {
+        console.log(err);
       });
   };
 
@@ -79,7 +80,6 @@ export class VerificationController {
     return axios
       .post("https://api.clearout.io/v2/email_verify/instant", reqBody, options)
       .then((response) => {
-        console.log(response.data);
         const raw_data = response.data;
         const verification = new Verification({
           email: email,
@@ -89,8 +89,8 @@ export class VerificationController {
         });
 
         verification.save((err, doc) => {
-          if (!err) console.log("success", "User added successfully!");
-          else console.log("Error during record insertion : " + err);
+          // if (!err) console.log("success", "User added successfully!");
+          // else console.log("Error during record insertion : " + err);
         });
 
         return verification;
