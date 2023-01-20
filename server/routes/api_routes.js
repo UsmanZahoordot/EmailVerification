@@ -20,6 +20,7 @@ import {
   updateUser,
   deleteUser,
   deductCredits,
+  getUserQueriesPagination,
 } from "../controllers/user_controller.js";
 import { email_finder_request } from "../controllers/finder_controller.js";
 
@@ -32,18 +33,15 @@ router.post("/verify", async (req, res) => {
     return;
   }
 
-  const allow = deductCredits(req.body.username, req.body.emails.length);
+  const allow = await deductCredits(req.body.username, req.body.emails.length);
   if (!allow) {
     res.status(500).send("Not enough credits");
     return;
   }
 
   const filename = req.body.filename;
-
   Promise.all(req.body.emails.map((email) => verify_email(email))).then(
     (results) => {
-      res.send(results);
-      console.log("result\n", results);
       if (!filename) {
         return;
       }
@@ -56,11 +54,12 @@ router.post("/verify", async (req, res) => {
         invalid_count,
         Date.now(),
         req.body.emails
-      );
+      ).then((_) => {
+        res.send(results);
+      });
     }
   );
-
-})
+});
 
 router.post("/", async (req, res) => {
   Promise.all(req.body.emails.map((email) => verify_email(email))).then(
@@ -79,7 +78,6 @@ const verify_email = async (email) => {
   let isResolved = false;
   let verificationStatus = null;
 
-  console.log("klean called");
   return controller.klean_api_request(email);
 
   // return controller
@@ -152,7 +150,11 @@ router.post("/signup", async (req, res) => {
 });
 
 router.post("/user-queries", async (req, res) => {
-  const queries = await getUserQueries(req.body.username);
+  // const queries = await getUserQueries(req.body.username);
+  const queries = await getUserQueriesPagination(
+    req.body.username,
+    req.body.page
+  );
   res.send(queries);
 });
 
@@ -181,13 +183,11 @@ router.post("/get-all-emails", async (req, res) => {
 
 router.post("/emails-count", async (req, res) => {
   const value = await get_all_emails_count();
-  console.log(value);
   res.send({ count: value });
 });
 
 router.post("/users-count", async (req, res) => {
   const value = await getUsersCount();
-  console.log(value);
   res.send({ count: value });
 });
 
@@ -229,8 +229,8 @@ router.get("/is_admin", async (req, res) => {
 
 router.post("/get_daily_count", async (req, res) => {
   const username = req.body.username;
-  const start_date = new Date(req.body.start_date);
-  const end_date = new Date(req.body.end_date);
+  const start_date = new Date(req.body.start_date + " 12:00:00")
+  const end_date = new Date(req.body.end_date + " 12:00:00");
 
   const daily_count = await get_daily_count(username, start_date, end_date);
   res.send({
@@ -258,7 +258,6 @@ router.post("/get_daily", async (req, res) => {
 
 router.post("/user-credits", async (req, res) => {
   const credits = await getCredits(req.body.user_id);
-  console.log(req.body);
   res.send({
     credits: credits,
   });

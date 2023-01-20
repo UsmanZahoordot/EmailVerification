@@ -46,7 +46,7 @@ const addVerificationToUser = async (
     timestamp: timestamp,
     emails: emails,
   });
-  verificationQuery.save();
+  await verificationQuery.save();
   return true;
 };
 
@@ -60,8 +60,33 @@ const getUserQueries = async (username) => {
 
   const queries = await VerificationQuery.find({
     user: user._id,
-  }).sort({timestamp: - 1});
+  }).sort({ timestamp: -1 });
   return queries;
+};
+
+const getUserQueriesPagination = async (username, page) => {
+  const PAGE_SIZE = 5;
+  const user = await User.findOne({
+    username: username,
+  });
+  if (!user) {
+    return [];
+  }
+  const queries = await VerificationQuery.find({
+    user: user._id,
+  })
+    .skip((page - 1) * PAGE_SIZE)
+    .limit(PAGE_SIZE)
+    .sort({ timestamp: -1 });
+  
+  const page_count = (await VerificationQuery.countDocuments({
+    user: user._id,
+  }) - 1) / PAGE_SIZE;
+
+  return {
+    queries: queries,
+    page_count: page_count,
+  }
 };
 
 const getEmailsByFileID = async (username, id, filename) => {
@@ -85,11 +110,9 @@ const getUsersCount = async () => {
 
 // get all user in pagination with 10 users per page
 const getUsers = async (page) => {
-  const users = await User.find(
-    {
-      is_admin: false,
-    }
-  )
+  const users = await User.find({
+    is_admin: false,
+  })
     .skip((page - 1) * 10)
     .limit(10);
   return users.map((item) => {
@@ -136,7 +159,6 @@ const checkAdmin = async (username) => {
     username: username,
   });
   if (!user) return false;
-  console.log("user=", user.is_admin);
   return user.is_admin;
 };
 
@@ -169,7 +191,7 @@ const get_daily_count = async (username, start_date, end_date) => {
 
   const getDates = (d1, d2) => {
     var oneDay = 24 * 3600 * 1000;
-    for (var d = [], ms = d1 * 1, last = d2 * 1; ms < last; ms += oneDay) {
+    for (var d = [], ms = d1 * 1, last = d2 * 1; ms <= last; ms += oneDay) {
       d.push(new Date(ms));
     }
     return d;
@@ -215,9 +237,6 @@ const get_daily = async (username, start_date, end_date, page, limit) => {
     }
   });
 
-  console.log("start date", start_date);
-  console.log("end date", end_date);
-  console.log("page", page);
 
   const data = await Verification.find({
     verified_on: {
@@ -261,6 +280,7 @@ export {
   get_daily_count,
   get_daily,
   getUserQueries,
+  getUserQueriesPagination,
   getEmailsByFileID as getVerificationByID,
   getUsers,
   getUsersCount,

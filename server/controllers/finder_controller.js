@@ -22,7 +22,6 @@ export const email_finder_request = async (response, name, domain) => {
         return;
       }
 
-      console.log(res.body);
       response.send(res.body);
     }
   );
