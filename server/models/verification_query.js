@@ -13,20 +13,20 @@ const verificiationQuerySchema = new mongoose.Schema({
   },
   valid_count: {
     type: Number,
-    required: true,
   },
   invalid_count: {
     type: Number,
-    required: true,
   },
   timestamp: {
     type: Date,
     required: true,
   },
+  firebase_key: {
+    type: String,
+  },
   emails: [
     {
       type: String,
-      required: true,
       minlength: 5,
       maxlength: 50,
     },

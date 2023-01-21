@@ -21,8 +21,12 @@ import {
   deleteUser,
   deductCredits,
   getUserQueriesPagination,
+  getUserQuery,
+  createQuery,
+  removeInProgress,
 } from "../controllers/user_controller.js";
 import { email_finder_request } from "../controllers/finder_controller.js";
+import axios from "axios";
 
 export const router = Router();
 const controller = new VerificationController();
@@ -39,23 +43,28 @@ router.post("/verify", async (req, res) => {
     return;
   }
 
-  const filename = req.body.filename;
+  const query_id = await createQuery(
+    req.body.username,
+    req.body.filename,
+    Date.now(),
+    req.body.firebase_key
+  );
+
+  res.send({
+    status: "in progress",
+    key: req.body.firebase_key,
+  });
+
+
   Promise.all(req.body.emails.map((email) => verify_email(email))).then(
     (results) => {
-      if (!filename) {
-        return;
-      }
       const valid_count = results.filter((result) => result.is_valid).length;
       const invalid_count = results.filter((result) => !result.is_valid).length;
-      addVerificationToUser(
-        req.body.username,
-        filename,
-        valid_count,
-        invalid_count,
-        Date.now(),
-        req.body.emails
-      ).then((_) => {
-        res.send(results);
+      addVerificationToUser(query_id, req.body.emails, valid_count, invalid_count).then((_) => {
+        removeInProgress(query_id);
+        console.log(req.body.firebase_key);
+        const url = `https://everify-326212-default-rtdb.asia-southeast1.firebasedatabase.app/${req.body.firebase_key}.json`;
+        axios.delete(url);
       });
     }
   );
@@ -67,6 +76,20 @@ router.post("/", async (req, res) => {
       res.send(results);
     }
   );
+});
+
+router.get("/get-file", async (req, res) => {
+  const file = await getUserQuery(
+    req.query.username,
+    req.query.filename,
+    req.query.timestamp
+  );
+
+  if (!file) {
+    res.status(404).send("File not found");
+    return;
+  }
+  res.send(file);
 });
 
 const verify_email = async (email) => {
@@ -229,7 +252,7 @@ router.get("/is_admin", async (req, res) => {
 
 router.post("/get_daily_count", async (req, res) => {
   const username = req.body.username;
-  const start_date = new Date(req.body.start_date + " 12:00:00")
+  const start_date = new Date(req.body.start_date + " 12:00:00");
   const end_date = new Date(req.body.end_date + " 12:00:00");
 
   const daily_count = await get_daily_count(username, start_date, end_date);
