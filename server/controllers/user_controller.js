@@ -25,30 +25,77 @@ const userSignup = async (
   return true;
 };
 
-const addVerificationToUser = async (
-  username,
-  filename,
-  valid_count,
-  invalid_count,
-  timestamp,
-  emails
-) => {
+
+const createQuery = async (username, filename, timestamp, firebase_key) => {
   const user = await User.findOne({
     username: username,
   });
   if (!user) return false;
 
-  const verificationQuery = new VerificationQuery({
+  const query = new VerificationQuery({
     user: user._id,
     filename: filename,
-    valid_count: valid_count,
-    invalid_count: invalid_count,
     timestamp: timestamp,
-    emails: emails,
+    firebase_key: firebase_key,
   });
-  await verificationQuery.save();
+  await query.save();
+  return query._id;
+};
+
+const addVerificationToUser = async (
+  query_id,
+  emails,
+  valid_count,
+  invalid_count,
+) => {
+  // const verificationQuery = new VerificationQuery({
+  //   user: user._id,
+  //   filename: filename,
+  //   valid_count: valid_count,
+  //   invalid_count: invalid_count,
+  //   timestamp: timestamp,
+  //   emails: emails,
+  // });
+
+  await VerificationQuery.findOneAndUpdate(
+    { _id:  mongoose.Types.ObjectId(query_id) },
+    {
+      $set: {
+        emails: emails,
+        valid_count: valid_count,
+        invalid_count: invalid_count,
+      },
+    },
+  );
   return true;
 };
+
+const removeInProgress = async (query_id) => { 
+  await VerificationQuery.findOneAndUpdate(
+    { _id:  mongoose.Types.ObjectId(query_id) },
+    {
+      $set: {
+        firebase_key: null,
+      },
+    },
+  );
+  return true;
+};
+
+const getUserQuery = async(username, filename, timestamp) => {
+  const user = await User.findOne({
+    username: username,
+  });
+  if (!user) return null;
+
+  const query = await VerificationQuery.findOne({
+    user: user._id,
+    filename: filename,
+    timestamp: timestamp,
+  });
+
+  return query;
+}
 
 const getUserQueries = async (username) => {
   const user = await User.findOne({
@@ -277,8 +324,11 @@ export {
   userSignup,
   addVerificationToUser,
   checkAdmin,
+  createQuery,
+  removeInProgress,
   get_daily_count,
   get_daily,
+  getUserQuery,
   getUserQueries,
   getUserQueriesPagination,
   getEmailsByFileID as getVerificationByID,
