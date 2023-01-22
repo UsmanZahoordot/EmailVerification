@@ -97,11 +97,11 @@ const verify_email = async (email) => {
   if (cached_queries.length > 0) {
     return Promise.resolve(cached_queries[0]);
   }
-
-  let isResolved = false;
-  let verificationStatus = null;
-
   return controller.klean_api_request(email);
+
+  // let isResolved = false;
+  // let verificationStatus = null;
+
 
   // return controller
   //   .klean_api_request(email)

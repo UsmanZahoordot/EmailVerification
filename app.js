@@ -3,7 +3,6 @@ import { config } from "dotenv";
 import morgan from "morgan";
 import {connectDB} from './config/db.js';
 import {router} from './server/routes/api_routes.js'
-import bodyParser from 'body-parser';
 import {flushDb} from './server/crons/flushdb.js'
 import cors from 'cors';
 
@@ -16,7 +15,8 @@ config({path:'./config/.env'})
 
 connectDB();
 
-app.use(bodyParser.json());
+app.use(express.json({limit: '50mb'}));
+
 app.use('/api', router);
 
 flushDb();
