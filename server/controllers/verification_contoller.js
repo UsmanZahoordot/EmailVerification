@@ -27,7 +27,7 @@ export const get_all_emails = async (page) => {
 };
 
 export class VerificationController {
-  klean_api_request = async (email) => {
+  klean_api_request = async (email, depth = 0) => {
     var reqBody = {
       record: email,
     };
@@ -63,6 +63,17 @@ export class VerificationController {
       })
       .catch((err) => {
         console.log(err);
+        if (depth < 3) {
+          return this.klean_api_request(email, depth + 1);
+        }
+        else {
+          return {
+            email: email,
+            is_valid: false,
+            is_disposable: false,
+            verified_on: new Date(),
+          };
+        }
       });
   };
 
