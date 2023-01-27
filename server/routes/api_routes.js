@@ -188,16 +188,22 @@ router.post("/reverify-file", async (req, res) => {
     req.body.id,
     req.body.filename
   );
-  Promise.all(emails.map((email) => verify_email(email))).then((results) => {
-    const filtered_results = results.filter(
-      (result) =>
-        mode === "all" ||
-        (mode === "valid" && result.is_valid) ||
-        (mode === "invalid" && !result.is_valid) ||
-        (mode === "disposable" && result.is_disposable)
-    );
-    res.send(filtered_results);
-  });
+  try {
+    Promise.all(emails.map((email) => verify_email(email))).then((results) => {
+      const filtered_results = results.filter(
+        (result) =>
+          mode === "all" ||
+          (mode === "valid" && result.is_valid) ||
+          (mode === "invalid" && !result.is_valid) ||
+          (mode === "disposable" && result.is_disposable)
+      );
+      res.send(filtered_results);
+    });
+  }
+  catch (err) {
+    console.log(err);
+  }
+  
 });
 
 router.post("/get-all-emails", async (req, res) => {

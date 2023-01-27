@@ -9,7 +9,7 @@ const verificiationQuerySchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 3,
-    maxlength: 50,
+    maxlength: 100,
   },
   valid_count: {
     type: Number,
@@ -28,7 +28,7 @@ const verificiationQuerySchema = new mongoose.Schema({
     {
       type: String,
       minlength: 5,
-      maxlength: 50,
+      maxlength: 200,
     },
   ],
 });
