@@ -46,17 +46,23 @@ export class VerificationController {
         options
       )
       .then((response) => {
+        
         const raw_data = response.data;
+        // console.log(raw_data);
         const verification = new Verification({
           email: raw_data["record"],
           is_valid: raw_data["is_exist"] ? true : false,
-          is_disposable: raw_data["is_disposable"],
+          is_disposable: raw_data["is_disposable"]? true : false,
           verified_on: new Date(),
         });
 
         verification.save((err, doc) => {
-          // if (!err) console.log("success", "User added successfully!");
-          // else console.log("Error during record insertion : " + err);
+          if (!err) console.log("success with klean", "User added successfully!");
+          else {
+            console.log("Error during record insertion with klean: "+ email + '\n' + err);
+            // console.log('\n' + raw_data)
+        
+          }
         });
 
         return verification;
@@ -74,8 +80,8 @@ export class VerificationController {
             verified_on: new Date(),
           });
           verification.save((err, doc) => {
-            // if (!err) console.log("success", "User added successfully!");
-            // else console.log("Error during record insertion : " + err);
+            if (!err) console.log("success", "User added successfully!");
+            else console.log("Error during record insertion : " + err);
           });
   
           return verification;
