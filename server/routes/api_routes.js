@@ -6,6 +6,8 @@ import {
   get_all_emails_count,
 } from "../controllers/verification_contoller.js";
 
+import { File } from "../models/file.js";
+
 import {
   addVerificationToUser,
   checkAdmin,
@@ -42,11 +44,11 @@ router.post("/verify", async (req, res) => {
     res.status(500).send("Not enough credits");
     return;
   }
-
+  const current_date = Date.now();
   const query_id = await createQuery(
     req.body.username,
     req.body.filename,
-    Date.now(),
+    current_date,
     req.body.firebase_key
   );
 
@@ -55,12 +57,24 @@ router.post("/verify", async (req, res) => {
     key: req.body.firebase_key,
   });
 
-
   Promise.all(req.body.emails.map((email) => verify_email(email))).then(
     (results) => {
+      const file = new File({
+        filename: req.body.filename,
+        user_id: req.body.username,
+        date: current_date,
+        verifications: results,
+      });
+      file.save();
+
       const valid_count = results.filter((result) => result.is_valid).length;
       const invalid_count = results.filter((result) => !result.is_valid).length;
-      addVerificationToUser(query_id, req.body.emails, valid_count, invalid_count).then((_) => {
+      addVerificationToUser(
+        query_id,
+        req.body.emails,
+        valid_count,
+        invalid_count
+      ).then((_) => {
         removeInProgress(query_id);
         console.log(req.body.firebase_key);
         const url = `https://everify-326212-default-rtdb.asia-southeast1.firebasedatabase.app/${req.body.firebase_key}.json`;
@@ -101,7 +115,6 @@ const verify_email = async (email) => {
 
   // let isResolved = false;
   // let verificationStatus = null;
-
 
   // return controller
   //   .klean_api_request(email)
@@ -188,16 +201,15 @@ router.post("/reverify-file", async (req, res) => {
     req.body.id,
     req.body.filename
   );
-  Promise.all(emails.map((email) => verify_email(email))).then((results) => {
-    const filtered_results = results.filter(
-      (result) =>
-        mode === "all" ||
-        (mode === "valid" && result.is_valid) ||
-        (mode === "invalid" && !result.is_valid) ||
-        (mode === "disposable" && result.is_disposable)
-    );
-    res.send(filtered_results);
+
+  // consolelog the file object that has same name as the filename and same username and same id
+  const file = await File.findOne({
+    filename: req.body.filename,
+    user_id: req.body.username,
+    date: req.body.id,
   });
+  console.log(file);
+  res.send(file);
 });
 
 router.post("/get-all-emails", async (req, res) => {

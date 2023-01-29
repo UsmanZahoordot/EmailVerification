@@ -67,12 +67,18 @@ export class VerificationController {
           return this.klean_api_request(email, depth + 1);
         }
         else {
-          return {
+          const verification = new Verification({
             email: email,
             is_valid: false,
             is_disposable: false,
             verified_on: new Date(),
-          };
+          });
+          verification.save((err, doc) => {
+            // if (!err) console.log("success", "User added successfully!");
+            // else console.log("Error during record insertion : " + err);
+          });
+  
+          return verification;
         }
       });
   };

@@ -12,7 +12,7 @@ const verificationSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 5,
-    maxlength: 50,
+    maxlength: 100,
   },
   is_valid: {
     type: Boolean,
