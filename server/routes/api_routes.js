@@ -8,6 +8,8 @@ import {
 
 import { File } from "../models/file.js";
 
+import amqp from "amqplib/callback_api.js";
+
 import {
   addVerificationToUser,
   checkAdmin,
@@ -34,6 +36,7 @@ export const router = Router();
 const controller = new VerificationController();
 
 router.post("/verify", async (req, res) => {
+  console.log("verify called");
   if (req.body.username == undefined) {
     res.send("Username not provided");
     return;
@@ -51,7 +54,60 @@ router.post("/verify", async (req, res) => {
     current_date,
     req.body.firebase_key
   );
+  
+  console.log("send");
+  
+  req.body.query_id = query_id;
+  req.body.current_date = current_date; 
+  // Connect to RabbitMQ
+  amqp.connect('amqp://localhost', (err, conn) => {
+    if (err) {
+      console.log("Error connecting to RabbitMQ");
+    }
+    console.log("asdf");
+    conn.createChannel((err, channel) => {
+      if (err) {
+        console.log("Error creating channel");
+      }
+      console.log("zcv");
+      const queue = 'verify_email_queue';
 
+      // req.body.emails.forEach((email) => {
+        channel.assertQueue(queue, { durable: false });
+        channel.sendToQueue(queue, Buffer.from(JSON.stringify(req.body)));
+
+        console.log(`[x] Sent email: ${JSON.stringify(req.body)}`);
+      // });
+    });
+  });
+
+  res.send({
+    status: "in progress",
+    key: req.body.firebase_key,
+  });
+});
+
+
+router.post("/verify1", async (req, res) => {
+  if (req.body.username == undefined) {
+    res.send("Username not provided");
+    return;
+  }
+
+  const allow = await deductCredits(req.body.username, req.body.emails.length);
+  if (!allow) {
+    res.status(500).send("Not enough credits");
+    return;
+  }
+  const current_date = Date.now();
+  const query_id = await createQuery(
+    req.body.username,
+    req.body.filename,
+    current_date,
+    req.body.firebase_key
+  );
+  
+  console.log("send");
   res.send({
     status: "in progress",
     key: req.body.firebase_key,
