@@ -79,7 +79,13 @@ router.post("/verify", async (req, res) => {
         console.log(`[x] Sent email: ${JSON.stringify(req.body)}`);
       // });
     });
+    setTimeout(() => {
+      conn.close();
+      console.log('Connection closed');
+    }, 500);
   });
+  
+  
 
   res.send({
     status: "in progress",
