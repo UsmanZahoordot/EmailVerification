@@ -28,6 +28,8 @@ import {
   getUserQuery,
   createQuery,
   removeInProgress,
+  searchUsers,
+  getMostConsumedCreditsUsers,
 } from "../controllers/user_controller.js";
 import { email_finder_request } from "../controllers/finder_controller.js";
 import axios from "axios";
@@ -358,4 +360,23 @@ router.post("/user-credits", async (req, res) => {
   res.send({
     credits: credits,
   });
+});
+
+
+router.post("/user-search", async (req, res) => {
+  try {
+    const users = await searchUsers(req.body.data);
+    res.send(users);
+  }
+  catch (err) {
+    // send 400 response if error
+    // console.log(err);
+    res.status(400).send("Wrong search string provided");
+  }
+  
+});
+
+router.post("/most-consumed-credits-user", async (req, res) => {
+  const users = await getMostConsumedCreditsUsers();
+  res.send(users);
 });

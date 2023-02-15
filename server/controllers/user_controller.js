@@ -18,6 +18,7 @@ const userSignup = async (
     is_admin: is_admin,
     credits: credits,
     email: email,
+    consumed_credits: 0,
   });
 
   const result = await user.save();
@@ -307,6 +308,7 @@ const deductCredits = async (username, credits) => {
     return false;
   }
   user.credits = user.credits - credits;
+  user.consumed_credits = user.consumed_credits + credits;
   const result = await user.save();
   if (!result) return false;
   return true;
@@ -319,6 +321,42 @@ const getCredits = async (username) => {
   if (!user) return null;
   return user.credits;
 };
+
+const searchUsers = async (search) => {
+  console.log(search);
+  const users = await User.find({
+    $or: [
+      { firstName: { $regex: search, $options: "i" } },
+      { lastName: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ],
+  });
+  return users.map((item) => {
+    return {
+      firstName: item.firstName,
+      lastName: item.lastName,
+      credits: item.credits,
+      email: item.email,
+    };
+  });
+};
+
+const getMostConsumedCreditsUsers = async () => {
+  const users = await User.find({
+    is_admin: false,
+  })
+    .sort({ consumed_credits: 1 })
+    // .limit(10);
+  return users.map((item) => {
+    return {
+      firstName: item.firstName,
+      lastName: item.lastName,
+      consumed_credits: item.consumed_credits,
+      email: item.email,
+    };
+  });
+};
+
 
 export {
   userSignup,
@@ -338,4 +376,6 @@ export {
   deleteUser,
   deductCredits,
   getCredits,
+  searchUsers,
+  getMostConsumedCreditsUsers,
 };
