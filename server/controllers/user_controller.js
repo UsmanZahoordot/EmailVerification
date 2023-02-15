@@ -211,13 +211,15 @@ const checkAdmin = async (username) => {
 };
 
 const get_daily_count = async (username, start_date, end_date) => {
+  end_date = new Date(end_date.getTime() + 24 * 60 * 60 * 1000); // add one day
+
   let counts_aggregate = VerificationQuery.aggregate([]);
   if (username != undefined) {
     counts_aggregate = counts_aggregate.match({
       user: mongoose.Types.ObjectId(username),
     });
   }
-
+  
   const counts = await counts_aggregate
     .match({
       timestamp: {
@@ -251,6 +253,7 @@ const get_daily_count = async (username, start_date, end_date) => {
   });
 
   let dates = getDates(start_date, end_date);
+  console.log("dates", dates);
   return dates.map((item) => ({
     _id: item.toISOString().slice(0, 10),
     total: (countsDict[item.toISOString().slice(0, 10)] || {})["total"] || 0,
@@ -259,6 +262,7 @@ const get_daily_count = async (username, start_date, end_date) => {
 };
 
 const get_daily = async (username, start_date, end_date, page, limit) => {
+
   let counts_aggregate = Verification.aggregate([]);
 
   if (username != undefined) {
@@ -267,12 +271,14 @@ const get_daily = async (username, start_date, end_date, page, limit) => {
     });
   }
   let count = 0;
+  const end_date_plus_one_day = new Date(end_date.getTime() + 24 * 60 * 60 * 1000); // add one day
+
   await Verification.aggregate([
     {
       $match: {
         verified_on: {
           $gte: start_date,
-          $lte: end_date,
+          $lte: end_date_plus_one_day,
         },
       },
     },
@@ -289,11 +295,11 @@ const get_daily = async (username, start_date, end_date, page, limit) => {
   const data = await Verification.find({
     verified_on: {
       $gte: start_date,
-      $lte: end_date,
+      $lte: end_date_plus_one_day,
     },
   })
     .limit(limit)
-    .skip((page - 1) * 10);
+    .skip((page - 1) * limit);
 
   return { data: data, count: count, page: page };
 };
