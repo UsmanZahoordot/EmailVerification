@@ -345,8 +345,8 @@ const getMostConsumedCreditsUsers = async () => {
   const users = await User.find({
     is_admin: false,
   })
-    .sort({ consumed_credits: 1 })
-    // .limit(10);
+    .sort({ consumed_credits: -1 })
+    .limit(10);
   return users.map((item) => {
     return {
       firstName: item.firstName,
