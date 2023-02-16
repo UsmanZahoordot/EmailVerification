@@ -4,6 +4,7 @@ import morgan from "morgan";
 import {connectDB} from './config/db.js';
 import {router} from './server/routes/api_routes.js'
 import {flushDb} from './server/crons/flushdb.js'
+import {resetConsumedCreditsJob} from './server/crons/reset_consumed.js'
 import cors from 'cors';
 
 const app = express();
@@ -20,6 +21,8 @@ app.use(express.json({limit: '50mb'}));
 app.use('/api', router);
 
 flushDb();
+resetConsumedCreditsJob();
+
 const PORT = process.env.PORT || 3001
 
 app.listen(PORT, () => {
