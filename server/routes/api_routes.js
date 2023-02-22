@@ -63,6 +63,10 @@ router.post("/change-method"), (req, res) => {
   res.send("OK");
 }
 
+router.get("/get-method"), (req, res) => {
+  res.send(currentMethod);
+}
+
 router.post("/verify", async (req, res) => {
   console.log("verify called");
   if (req.body.username == undefined) {
