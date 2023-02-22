@@ -46,12 +46,15 @@ const Methods = {
 }
 
 let currentMethod = -1;
-fs.readFileSync("method.txt", "utf8").split(/\r?\n/).forEach((line) => {
-  currentMethod = parseInt(line);
-}).catch((err) => {
+try {
+  fs.readFileSync("method.txt", "utf8").split(/\r?\n/).forEach((line) => {
+    currentMethod = parseInt(line);
+  });
+} catch (err) {
   currentMethod = 0;
   console.log(err);
-});
+}
+
 
 router.post("/change-method"), (req, res) => {
   currentMethodKey = req.body.method;
