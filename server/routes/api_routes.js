@@ -52,20 +52,15 @@ try {
   });
 } catch (err) {
   currentMethod = 0;
-  console.log(err);
 }
 
 
-router.post("/change-method"), (req, res) => {
-  currentMethodKey = req.body.method;
-  currentMethod = Methods[currentMethodKey];
+router.post("/change-method", (req, res) => {
+  currentMethod = req.body.method;
   fs.writeFileSync("method.txt", currentMethod);
   res.send("OK");
-}
+});
 
-router.get("/get-method"), (req, res) => {
-  res.send(currentMethod);
-}
 
 router.post("/verify", async (req, res) => {
   console.log("verify called");
@@ -186,6 +181,13 @@ router.post("/", async (req, res) => {
     }
   );
 });
+
+router.get("/get-api", async (req, res) => {
+  res.send({
+    "method": currentMethod,
+  });
+});
+
 
 router.get("/get-file", async (req, res) => {
   const file = await getUserQuery(
