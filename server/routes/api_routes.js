@@ -6,6 +6,7 @@ import {
   get_all_emails_count,
 } from "../controllers/verification_contoller.js";
 
+import fs from "fs";
 import { File } from "../models/file.js";
 
 import amqp from "amqplib/callback_api.js";
@@ -37,6 +38,28 @@ import axios from "axios";
 export const router = Router();
 const controller = new VerificationController();
 
+
+const Methods = {
+  KLEAN: 0,
+  CLEAROUT: 1,
+  BOTH: 2,
+}
+
+let currentMethod = -1;
+fs.readFileSync("method.txt", "utf8").split(/\r?\n/).forEach((line) => {
+  currentMethod = parseInt(line);
+}).catch((err) => {
+  currentMethod = 0;
+  console.log(err);
+});
+
+router.post("/change-method"), (req, res) => {
+  currentMethodKey = req.body.method;
+  currentMethod = Methods[currentMethodKey];
+  fs.writeFileSync("method.txt", currentMethod);
+  res.send("OK");
+}
+
 router.post("/verify", async (req, res) => {
   console.log("verify called");
   if (req.body.username == undefined) {
@@ -56,13 +79,13 @@ router.post("/verify", async (req, res) => {
     current_date,
     req.body.firebase_key
   );
-  
+
   console.log("send");
-  
+
   req.body.query_id = query_id;
-  req.body.current_date = current_date; 
+  req.body.current_date = current_date;
   // Connect to RabbitMQ
-  amqp.connect('amqp://localhost', (err, conn) => {
+  amqp.connect("amqp://localhost", (err, conn) => {
     if (err) {
       console.log("Error connecting to RabbitMQ");
     }
@@ -72,29 +95,30 @@ router.post("/verify", async (req, res) => {
         console.log("Error creating channel");
       }
       console.log("zcv");
-      const queue = 'verify_email_queue';
+      const queue = "verify_email_queue";
 
+      const body = {
+        method: currentMethod,
+        ...req.body,
+      }
       // req.body.emails.forEach((email) => {
-        channel.assertQueue(queue, { durable: false });
-        channel.sendToQueue(queue, Buffer.from(JSON.stringify(req.body)));
+      channel.assertQueue(queue, { durable: false });
+      channel.sendToQueue(queue, Buffer.from(JSON.stringify(req.body)));
 
-        console.log(`[x] Sent email: ${JSON.stringify(req.body)}`);
+      console.log(`[x] Sent email: ${JSON.stringify(body)}`);
       // });
     });
     setTimeout(() => {
       conn.close();
-      console.log('Connection closed');
+      console.log("Connection closed");
     }, 500);
   });
-  
-  
 
   res.send({
     status: "in progress",
     key: req.body.firebase_key,
   });
 });
-
 
 router.post("/verify1", async (req, res) => {
   if (req.body.username == undefined) {
@@ -114,7 +138,7 @@ router.post("/verify1", async (req, res) => {
     current_date,
     req.body.firebase_key
   );
-  
+
   console.log("send");
   res.send({
     status: "in progress",
@@ -362,18 +386,15 @@ router.post("/user-credits", async (req, res) => {
   });
 });
 
-
 router.post("/user-search", async (req, res) => {
   try {
     const users = await searchUsers(req.body.data);
     res.send(users);
-  }
-  catch (err) {
+  } catch (err) {
     // send 400 response if error
     // console.log(err);
     res.status(400).send("Wrong search string provided");
   }
-  
 });
 
 router.post("/most-consumed-credits-user", async (req, res) => {
