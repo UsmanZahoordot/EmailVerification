@@ -105,7 +105,7 @@ router.post("/verify", async (req, res) => {
       }
       // req.body.emails.forEach((email) => {
       channel.assertQueue(queue, { durable: false });
-      channel.sendToQueue(queue, Buffer.from(JSON.stringify(req.body)));
+      channel.sendToQueue(queue, Buffer.from(JSON.stringify(body)));
 
       console.log(`[x] Sent email: ${JSON.stringify(body)}`);
       // });
