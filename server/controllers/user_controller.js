@@ -152,7 +152,8 @@ const getEmailsByFileID = async (username, id, filename) => {
 };
 
 const getUsersCount = async () => {
-  const count = await User.countDocuments();
+  const filter = { is_admin: false};
+  const count = await User.countDocuments(filter);
   return count;
 };
 
