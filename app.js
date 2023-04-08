@@ -20,11 +20,6 @@ app.use(express.json({limit: '50mb'}));
 
 app.use('/api', router);
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  next();
-});
-
 
 flushDb();
 resetConsumedCreditsJob();
