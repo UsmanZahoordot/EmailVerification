@@ -5,11 +5,9 @@ import {connectDB} from './config/db.js';
 import {router} from './server/routes/api_routes.js'
 import {flushDb} from './server/crons/flushdb.js'
 import {resetConsumedCreditsJob} from './server/crons/reset_consumed.js'
-import cors from 'cors';
 
 const app = express();
 
-app.use(cors());
 app.use(morgan('tiny'));
 config({path:'./config/.env'})
 
