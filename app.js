@@ -11,7 +11,6 @@ const app = express();
 app.use(morgan('tiny'));
 config({path:'./config/.env'})
 
-
 connectDB();
 
 app.use(express.json({limit: '50mb'}));

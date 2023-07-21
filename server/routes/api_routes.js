@@ -302,12 +302,12 @@ router.post("/user-queries-finder", async (req, res) => {
 })
 
 router.post("/reverify-file", async (req, res) => {
-  const mode = req.body.mode;
-  const emails = await getVerificationByID(
-    req.body.username,
-    req.body.id,
-    req.body.filename
-  );
+  // const mode = req.body.mode;
+  // const emails = await getVerificationByID(
+  //   req.body.username,
+  //   req.body.id,
+  //   req.body.filename
+  // );
 
   // consolelog the file object that has same name as the filename and same username and same id
   const file = await File.findOne({
