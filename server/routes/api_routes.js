@@ -32,8 +32,10 @@ import {
   searchUsers,
   getMostConsumedCreditsUsers,
 } from "../controllers/user_controller.js";
+
 import { email_finder_request } from "../controllers/finder_controller.js";
 import axios from "axios";
+import { createFinderQuery, getUserQueriesPaginationFinder } from "../controllers/user_finder_controller.js";
 
 export const router = Router();
 const controller = new VerificationController();
@@ -91,15 +93,14 @@ router.post("/verify", async (req, res) => {
     if (err) {
       console.log("Error connecting to RabbitMQ");
     }
-    console.log("asdf");
     conn.createChannel((err, channel) => {
       if (err) {
         console.log("Error creating channel");
       }
-      console.log("zcv");
       const queue = "verify_email_queue";
 
       const body = {
+        type: "verify",
         method: currentMethod,
         ...req.body,
       }
@@ -291,6 +292,15 @@ router.post("/user-queries", async (req, res) => {
   res.send(queries);
 });
 
+router.post("/user-queries-finder", async (req, res) => {
+  // const queries = await getUserQueries(req.body.username);
+  const queries = await getUserQueriesPaginationFinder(
+    req.body.username,
+    req.body.page
+  );
+  res.send(queries);
+})
+
 router.post("/reverify-file", async (req, res) => {
   const mode = req.body.mode;
   const emails = await getVerificationByID(
@@ -389,6 +399,7 @@ router.post("/get_daily", async (req, res) => {
 });
 
 router.post("/user-credits", async (req, res) => {
+  console.log(req.body);
   const credits = await getCredits(req.body.user_id);
   res.send({
     credits: credits,
@@ -410,3 +421,61 @@ router.post("/most-consumed-credits-user", async (req, res) => {
   const users = await getMostConsumedCreditsUsers();
   res.send(users);
 });
+
+
+router.post("/business-verifications", async (req, res) => {
+
+  if (req.body.username == undefined) {
+    res.send("Username not provided");
+    return;
+  }
+
+  const allow = await deductCredits(req.body.username, req.body.emails.length);
+  if (!allow) {
+    res.status(500).send("Not enough credits");
+    return;
+  }
+  const current_date = Date.now();
+  const query_id = await createFinderQuery(
+    req.body.username,
+    req.body.filename,
+    current_date,
+    req.body.firebase_key
+  );
+
+  console.log("send");
+
+  req.body.query_id = query_id;
+  req.body.current_date = current_date;
+  console.log(req.body);
+  amqp.connect("amqp://localhost", (err, conn) => {
+    if (err) {
+      console.log("Error connecting to RabbitMQ");
+    }
+    conn.createChannel((err, channel) => {
+      if (err) {
+        console.log("Error creating channel");
+      }
+      const queue = "verify_email_queue";
+
+      const body = {
+        type: "find_business",
+        method: null,
+        ...req.body,
+      }
+      // req.body.emails.forEach((email) => {
+      channel.assertQueue(queue, { durable: false });
+      channel.sendToQueue(queue, Buffer.from(JSON.stringify(body)));
+
+      console.log(`find and verify called for: ${JSON.stringify(body)}`);
+      // });
+    });
+    setTimeout(() => {
+      conn.close();
+      console.log("Connection closed");
+    }, 500);
+  });
+
+  res.send("200")
+}
+);
