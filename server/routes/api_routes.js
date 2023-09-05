@@ -1,3 +1,4 @@
+
 import { Router } from "express";
 import {
   VerificationController,
@@ -36,6 +37,13 @@ import {
 import { email_finder_request } from "../controllers/finder_controller.js";
 import axios from "axios";
 import { createFinderQuery, getUserQueriesPaginationFinder } from "../controllers/user_finder_controller.js";
+import { Readable } from 'stream';
+import FormData from 'form-data';
+import {FileUploader} from "../models/fileuploader.js";
+import { processIncompleteFiles } from "../controllers/file_uploader_controller.js";
+import {BusinessVerification} from "../models/business_verification.js";
+
+
 
 export const router = Router();
 const controller = new VerificationController();
@@ -431,51 +439,120 @@ router.post("/business-verifications", async (req, res) => {
   }
 
   const allow = await deductCredits(req.body.username, req.body.emails.length);
-  if (!allow) {
-    res.status(500).send("Not enough credits");
-    return;
-  }
-  const current_date = Date.now();
-  const query_id = await createFinderQuery(
-    req.body.username,
-    req.body.filename,
-    current_date,
-    req.body.firebase_key
-  );
+  // if (!allow) {
+  //   res.status(500).send("Not enough credits");
+  //   return;
+  // }
 
-  console.log("send");
+  const csvData = req.body.emails.map((email) => ({
+    firstname: email["firstname"],
+    midname: email["midname"],
+    lastname: email["lastname"],
+    domain: email["domain"],
+  }));
 
-  req.body.query_id = query_id;
-  req.body.current_date = current_date;
-  console.log(req.body);
-  amqp.connect("amqp://localhost", (err, conn) => {
-    if (err) {
-      console.log("Error connecting to RabbitMQ");
-    }
-    conn.createChannel((err, channel) => {
-      if (err) {
-        console.log("Error creating channel");
+  const csvContent = csvData.map(entry => Object.values(entry).join(',')).join('\n');
+  const csvHeader = Object.keys(csvData[0]).join(',');
+
+  const combinedCsv = csvHeader + '\n' + csvContent;
+
+  const data = new FormData();
+  data.append('file', combinedCsv, 'data.csv'); // 'data.csv' is the file name you want to give
+  data.append('ignore_duplicate_file', 'true');
+
+  const config = {
+    method: 'post',
+    url: 'https://api.clearout.io/v2/email_finder/bulk',
+    headers: {
+      'Authorization': process.env.CLEAROUT_API_KEY,
+    },
+    data: data,
+  };
+
+  axios(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      if (response.data.status != "success") {
+        console.log("Error", response)
+        return;
       }
-      const queue = "verify_email_queue";
-
-      const body = {
-        type: "find_business",
-        method: null,
-        ...req.body,
-      }
-      // req.body.emails.forEach((email) => {
-      channel.assertQueue(queue, { durable: false });
-      channel.sendToQueue(queue, Buffer.from(JSON.stringify(body)));
-
-      console.log(`find and verify called for: ${JSON.stringify(body)}`);
-      // });
+      const fileuploader = new FileUploader({
+        filename: req.body.filename,
+        user_id: req.body.username,
+        date: Date.now(),
+        list_id: response.data.data.list_id,
+      });
+      fileuploader.save();
+      res.send(200);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).send("Wrong search string provided");
     });
-    setTimeout(() => {
-      conn.close();
-      console.log("Connection closed");
-    }, 500);
+  }
+);
+
+
+router.post("/user-business-verifications", async (req, res) => {
+  var user_id = req.body.user_id;
+  const page = req.body.page;
+
+  const files = await FileUploader.find({user_id: user_id}).sort({date: -1}).skip((page - 1) * 10).limit(10).exec();
+  var completed_files = files.filter((file) => file.downloaded_link != null);
+  var incompleted_files = files.filter((file) => file.downloaded_link == null);
+  
+  await processIncompleteFiles(incompleted_files);
+
+  completed_files = files.filter((file) => file.downloaded_link != null);
+  incompleted_files = files.filter((file) => file.downloaded_link == null);
+
+  res.send({
+    size: files.length,
+    completed_files: completed_files,
+    incompleted_files: incompleted_files,
   });
 
-  res.send("200")
-}
-);
+
+});
+
+
+router.post("/business-verifications-status", async (req, res) => {
+
+  var config = {
+    method: 'get',
+    url: `https://api.clearout.io/v2/email_finder/bulk/progress_status?list_id=${req.body.list_id}`,
+    headers: { 
+      'Authorization': process.env.CLEAROUT_API_KEY
+    }
+  };
+
+  axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data));
+    res.send(response.data);
+  })
+  .catch(function (error) {
+    console.log(error);
+    res.status(400).send("Wrong list id provided");
+  });
+});
+
+router.post("/business-verifications-download", async (req, res) => {
+  console.log(req.body);
+  BusinessVerification.findOne(
+    {
+      list_id: req.body.list_id,
+      filename: req.body.filename,
+      date: req.body.date,
+    },
+    (err, file) => {
+      if (err) {
+        console.log(err);
+        res.status(400).send("Wrong list id provided");
+      } else {
+        console.log(file);
+        res.send(file);
+      }
+    });
+
+});
