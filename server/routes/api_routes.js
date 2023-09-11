@@ -432,112 +432,129 @@ router.post("/most-consumed-credits-user", async (req, res) => {
 
 
 router.post("/business-verifications", async (req, res) => {
+  try{
 
-  if (req.body.username == undefined) {
-    res.send("Username not provided");
-    return;
-  }
+    if (req.body.username == undefined) {
+      res.send("Username not provided");
+      return;
+    }
 
-  const allow = await deductCredits(req.body.username, req.body.emails.length);
-  // if (!allow) {
-  //   res.status(500).send("Not enough credits");
-  //   return;
-  // }
+    const allow = await deductCredits(req.body.username, req.body.emails.length);
+    // if (!allow) {
+    //   res.status(500).send("Not enough credits");
+    //   return;
+    // }
 
-  const csvData = req.body.emails.map((email) => ({
-    firstname: email["firstname"],
-    midname: email["midname"],
-    lastname: email["lastname"],
-    domain: email["domain"],
-  }));
+    const csvData = req.body.emails.map((email) => ({
+      firstname: email["firstname"],
+      midname: email["midname"],
+      lastname: email["lastname"],
+      domain: email["domain"],
+    }));
 
-  const csvContent = csvData.map(entry => Object.values(entry).join(',')).join('\n');
-  const csvHeader = Object.keys(csvData[0]).join(',');
+    const csvContent = csvData.map(entry => Object.values(entry).join(',')).join('\n');
+    const csvHeader = Object.keys(csvData[0]).join(',');
 
-  const combinedCsv = csvHeader + '\n' + csvContent;
+    const combinedCsv = csvHeader + '\n' + csvContent;
 
-  const data = new FormData();
-  data.append('file', combinedCsv, 'data.csv'); // 'data.csv' is the file name you want to give
-  data.append('ignore_duplicate_file', 'true');
+    const data = new FormData();
+    data.append('file', combinedCsv, 'data.csv'); // 'data.csv' is the file name you want to give
+    data.append('ignore_duplicate_file', 'true');
 
-  const config = {
-    method: 'post',
-    url: 'https://api.clearout.io/v2/email_finder/bulk',
-    headers: {
-      'Authorization': process.env.CLEAROUT_API_KEY,
-    },
-    data: data,
-  };
+    const config = {
+      method: 'post',
+      url: 'https://api.clearout.io/v2/email_finder/bulk',
+      headers: {
+        'Authorization': process.env.CLEAROUT_API_KEY,
+      },
+      data: data,
+    };
 
-  axios(config)
-    .then((response) => {
-      console.log(JSON.stringify(response.data));
-      if (response.data.status != "success") {
-        console.log("Error", response)
-        return;
-      }
-      const fileuploader = new FileUploader({
-        filename: req.body.filename,
-        user_id: req.body.username,
-        date: Date.now(),
-        list_id: response.data.data.list_id,
+    axios(config)
+      .then((response) => {
+        console.log(JSON.stringify(response.data));
+        if (response.data.status != "success") {
+          console.log("Error", response)
+          return;
+        }
+        const fileuploader = new FileUploader({
+          filename: req.body.filename,
+          user_id: req.body.username,
+          date: Date.now(),
+          list_id: response.data.data.list_id,
+        });
+        fileuploader.save();
+        res.send(200);
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(400).send("Wrong search string provided");
       });
-      fileuploader.save();
-      res.send(200);
-    })
-    .catch((error) => {
-      console.log(error);
-      res.status(400).send("Wrong search string provided");
-    });
+    }
+  catch (err) {
+    console.log(err.message);
   }
+}
 );
 
 
 router.post("/user-business-verifications", async (req, res) => {
-  var user_id = req.body.user_id;
-  const page = req.body.page;
+  try {
 
-  const files = await FileUploader.find({user_id: user_id}).sort({date: -1}).skip((page - 1) * 10).limit(10).exec();
-  var completed_files = files.filter((file) => file.downloaded_link != null);
-  var incompleted_files = files.filter((file) => file.downloaded_link == null);
-  
-  await processIncompleteFiles(incompleted_files);
+    var user_id = req.body.user_id;
+    const page = req.body.page;
 
-  completed_files = files.filter((file) => file.downloaded_link != null);
-  incompleted_files = files.filter((file) => file.downloaded_link == null);
+    const files = await FileUploader.find({user_id: user_id}).sort({date: -1}).skip((page - 1) * 10).limit(10).exec();
+    var completed_files = files.filter((file) => file.downloaded_link != null);
+    var incompleted_files = files.filter((file) => file.downloaded_link == null);
+    
+    await processIncompleteFiles(incompleted_files);
 
-  res.send({
-    size: files.length,
-    completed_files: completed_files,
-    incompleted_files: incompleted_files,
-  });
+    completed_files = files.filter((file) => file.downloaded_link != null);
+    incompleted_files = files.filter((file) => file.downloaded_link == null);
 
-
+    res.send({
+      size: files.length,
+      completed_files: completed_files,
+      incompleted_files: incompleted_files,
+    });
+  }
+  catch (err) {
+    console.log(err.message);
+  }
 });
 
 
 router.post("/business-verifications-status", async (req, res) => {
+  try {
+    var config = {
+      method: 'get',
+      url: `https://api.clearout.io/v2/email_finder/bulk/progress_status?list_id=${req.body.list_id}`,
+      headers: { 
+        'Authorization': process.env.CLEAROUT_API_KEY
+      }
+    };
 
-  var config = {
-    method: 'get',
-    url: `https://api.clearout.io/v2/email_finder/bulk/progress_status?list_id=${req.body.list_id}`,
-    headers: { 
-      'Authorization': process.env.CLEAROUT_API_KEY
-    }
-  };
+    axios(config)
+    .then(function (response) {
+      console.log(JSON.stringify(response.data));
+      res.send(response.data);
+    })
+    .catch(function (error) {
+      console.log(error);
+      res.status(400).send("Wrong list id provided");
+    });
+  }
+  catch (err) {
+    console.log(err.message);
+  }
 
-  axios(config)
-  .then(function (response) {
-    console.log(JSON.stringify(response.data));
-    res.send(response.data);
-  })
-  .catch(function (error) {
-    console.log(error);
-    res.status(400).send("Wrong list id provided");
-  });
 });
 
 router.post("/business-verifications-download", async (req, res) => {
+
+  try {
+
   console.log(req.body);
   BusinessVerification.findOne(
     {
@@ -554,5 +571,9 @@ router.post("/business-verifications-download", async (req, res) => {
         res.send(file);
       }
     });
+  }
+  catch (err) {
+    console.log(err.message);
+  }
 
 });
