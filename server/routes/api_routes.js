@@ -10,7 +10,7 @@ import {
 import fs from "fs";
 import { File } from "../models/file.js";
 
-import amqp from "amqplib/callback_api.js";
+import amqps from "amqplib/callback_api.js";
 
 import {
   addVerificationToUser,
@@ -97,7 +97,7 @@ router.post("/verify", async (req, res) => {
   req.body.query_id = query_id;
   req.body.current_date = current_date;
   // Connect to RabbitMQ
-  amqp.connect("amqp://localhost", (err, conn) => {
+  amqps.connect("amqp://localhost", (err, conn) => {
     if (err) {
       console.log("Error connecting to RabbitMQ");
     }
