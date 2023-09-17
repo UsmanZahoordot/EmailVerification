@@ -555,25 +555,19 @@ router.post("/business-verifications-download", async (req, res) => {
 
   try {
 
-  console.log(req.body);
-  BusinessVerification.findOne(
-    {
-      list_id: req.body.list_id,
-      filename: req.body.filename,
-      date: req.body.date,
-    },
-    (err, file) => {
-      if (err) {
-        console.log(err);
-        res.status(400).send("Wrong list id provided");
-      } else {
-        console.log(file);
-        res.send(file);
-      }
-    });
+    console.log(req.body);
+    var file = await BusinessVerification.findOne(
+      {
+        list_id: req.body.list_id,
+        filename: req.body.filename,
+      });
+    console.log("after file:", file)
+    res.send(file);
   }
   catch (err) {
     console.log(err.message);
   }
+  
+  
 
 });

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const fileSchema = new mongoose.Schema({
   first_name: { type: String, required: true },
-  last_name: { type: String, required: true },
+  last_name: { type: String, required: false },
   mid_name: { type: String, required: false },
   domain: { type: String, required: true },
   is_found: { type: Boolean, required: true },
