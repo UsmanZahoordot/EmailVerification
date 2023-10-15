@@ -217,7 +217,7 @@ const verify_email = async (email) => {
   if (cached_queries.length > 0) {
     return Promise.resolve(cached_queries[0]);
   }
-  return controller.klean_api_request(email);
+  return controller.klean_api_request(email, 0,process.env.KLEAN_API_KEY_2);
 
   // let isResolved = false;
   // let verificationStatus = null;

@@ -27,14 +27,20 @@ export const get_all_emails = async (page) => {
 };
 
 export class VerificationController {
-  klean_api_request = async (email, depth = 0) => {
+  klean_api_request = async (email, depth=0, apikey="") => {
+    var api_key = process.env.KLEAN_API_KEY
+    if (apikey) {
+      api_key = apikey;
+      console.log("new api key")
+    }
+
     var reqBody = {
       record: email,
     };
     reqBody = JSON.stringify(reqBody);
     const options = {
       headers: {
-        api_key: process.env.KLEAN_API_KEY,
+        api_key: api_key,
         "Content-Type": "application/json",
       },
     };
@@ -59,7 +65,7 @@ export class VerificationController {
         verification.save((err, doc) => {
           if (!err) console.log("success with klean", "User added successfully!");
           else {
-            console.log("Error during record insertion with klean: "+ email + '\n' + err);
+            console.log("Error during record insertion with klean: "+ email + '\n' );
             // console.log('\n' + raw_data)
         
           }
